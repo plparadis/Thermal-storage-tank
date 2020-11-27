@@ -18,7 +18,7 @@ st.set_page_config(page_title="Thermal Storage Tank",
 col1, col2 = st.beta_columns((2,1))
 col1.title("Thermal Storage Tank")
 with col2:
-    col2.image("static/logo.jpg",use_column_width=True,output_format='PNG')
+    col2.image("static/logo.png",use_column_width=True,output_format='PNG')
 
 with st.beta_expander("Tool description"):
     st.markdown("A simple simulation tool to simulate stratified thermal storage tank.")
