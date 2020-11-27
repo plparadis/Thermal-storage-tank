@@ -15,7 +15,7 @@ st.set_page_config(page_title="Thermal Storage Tank",
                     layout="centered",
                     initial_sidebar_state="auto")
 
-col1, col2 = st.beta_columns((2,1))
+col1, col2 = st.beta_columns((3,1))
 col1.title("Thermal Storage Tank")
 with col2:
     col2.image("static/logo.png",use_column_width=True,output_format='PNG')
