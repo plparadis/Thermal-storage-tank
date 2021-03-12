@@ -2,7 +2,6 @@
 import streamlit as st
 from matplotlib import pyplot as plt
 
-
 TextColor = "#404041"
 plt.rcParams['text.color'] = TextColor
 plt.rcParams['axes.labelcolor'] = TextColor
