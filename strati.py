@@ -506,11 +506,11 @@ HXefdresults.Tout = HXefdresults.Toutk - 273.15;
 Res2results.T = Res2results.Tk - 273.15;
 
 # Affichage des conditions d'opération
-print('La température de la pièce est de {0}°C.\n'.format(data.Tairk - 273.15))
-print('La température initial du r�servoir est {0}°C.\n'.format(paramRes2.Ti))
-print('La température du retour d\'eau chaude est {0}°C \n'.format(paramRes2.Tin_EC))
-print('avec un débit de {0:.2f} kg/s \n'.format(paramRes2.m_in))
-print('La température de l\'eau chaude domestique à l\'entrée est {0}°C.\n'.format(paramHXefd.Tin))
+print('La température de la pièce est de {0}°C.'.format(data.Tairk - 273.15))
+print('La température initial du réservoir est {0}°C.'.format(paramRes2.Ti))
+print('La température du retour d\'eau chaude est {0}°C '.format(paramRes2.Tin_EC))
+print('avec un débit de {0:.2f} kg/s '.format(paramRes2.m_in))
+print('La température de l\'eau chaude domestique à l\'entrée est {0}°C.'.format(paramHXefd.Tin))
 print('avec un débit de {0:.2f} kg/s \n'.format(paramHXefd.m_in))
 
 #  Impression des figures
@@ -554,7 +554,7 @@ Volume_cuivre = (paramHXefd.Aext - paramHXefd.As) * paramHXefd.Ltot
 print('Volume de Cuivre dans l''échangeur EFD = {0:.2f} [m3]'.format(Volume_cuivre))
 
 print('Masse thermique d''eau EC = {0:.2f} [kJ/K]'.format(data.rho_EC * Volume_eau_EC * data.Cp_EC * 1e-3))
-print('Masse thermique d''eau EFD � 300[K] = {0:.2f} [kJ/K]'.format(data.rho_EC * Volume_eau_EFD * data.Cp_EC * 1e-3))
+print('Masse thermique d''eau EFD à 300[K] = {0:.2f} [kJ/K]'.format(data.rho_EC * Volume_eau_EFD * data.Cp_EC * 1e-3))
 print('Masse thermique du Cuivre de l''échangeur EFD = {0:.2f} [kJ/K]'.format(
     data.rho_cu * Volume_cuivre * data.cp_cu * 1e-3))
 
