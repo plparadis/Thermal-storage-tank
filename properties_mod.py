@@ -5,27 +5,65 @@ from scipy.optimize import newton
 # This class provides the functionality we want. You only need to look at
 # this if you want to know how this works. It only needs to be defined
 # once, no need to muck around with its internals.
-class switch(object):
+# class switch(object):
+#     def __init__(self, value):
+#         self.value = value
+#         self.fall = False
+#
+#     def __iter__(self):
+#         """Return the match method once, then stop"""
+#         yield self.match
+#         raise StopIteration
+#
+#     def match(self, *args):
+#         """Indicate whether or not to enter a case suite"""
+#         if self.fall or not args:
+#             return True
+#         elif self.value in args: # changed for v1.5, see below
+#             self.fall = True
+#             return True
+#         else:
+#             return False
+
+
+class switch:
     def __init__(self, value):
         self.value = value
-        self.fall = False
+        self._entered = False
+        self._broken = False
+        self._prev = None
 
-    def __iter__(self):
-        """Return the match method once, then stop"""
-        yield self.match
-        raise StopIteration
+    def __enter__(self):
+        return self
 
-    def match(self, *args):
-        """Indicate whether or not to enter a case suite"""
-        if self.fall or not args:
-            return True
-        elif self.value in args: # changed for v1.5, see below
-            self.fall = True
-            return True
-        else:
+    def __exit__(self, type, value, traceback):
+        return False  # Allows a traceback to occur
+
+    def __call__(self, *values):
+        if self._broken:
             return False
 
+        if not self._entered:
+            if values and self.value not in values:
+                return False
+            self._entered, self._prev = True, values
+            return True
 
+        if self._prev is None:
+            self._prev = values
+            return True
+
+        if self._prev != values:
+            self._broken = True
+            return False
+
+        if self._prev == values:
+            self._prev = None
+            return False
+
+    @property
+    def default(self):
+        return self()
 
 def air_prop(nom,T):
 #
@@ -80,20 +118,20 @@ def air_prop(nom,T):
     p = np.interp(T,x, y)
 
 
-    for case in switch(nom):
-        if case('mu'):
+    with switch(nom) as case:
+        while case('mu'):
             p = p*10**-7
             break
-        if case('nu'):
+        while case('nu'):
             p = p*10**-6
             break
-        if case('k'):
+        while case('k'):
             p = p*10**-3
             break
-        if case('al'):
+        while case('al'):
             p = p*10**-6
             break
-        if case('Cp'):
+        while case('Cp'):
             p = p*10**3
             break
     return p
@@ -169,8 +207,8 @@ def eau_prop(nom,T):
     label = ['temp','pres','vf','vg','hfg','Cpf','Cpg','muf','mug','kf','kg','Prf','Prg','st','betaf']
 
 
-    for case in switch(nom):
-        if case('temp'):
+    with switch(nom) as case:
+        while case('temp'):
             y = eau[:,0]
             x = eau[:,1]
             pmin = x[0];
@@ -179,7 +217,7 @@ def eau_prop(nom,T):
                 print('Warning : La valeur de T est en dehors de la table : extrapolation !')
             p = np.interp(T,x, y)
             break
-        if case('muf','mug'):
+        while case('muf','mug'):
             i = label.index(nom)
             y = eau[:,i]
             x = eau[:,0]
@@ -190,7 +228,7 @@ def eau_prop(nom,T):
             p = np.interp(T,x, y)
             p = p*10**-6
             break
-        if case('nuf'):
+        while case('nuf'):
             nom1 = 'muf'
             i = label.index(nom1)
             y = eau[:,i]
@@ -206,7 +244,7 @@ def eau_prop(nom,T):
             p2 = np.interp(T,x, y)
             p = p1*p2*10**-9
             break
-        if case('nug'):
+        while case('nug'):
             nom1 = 'mug'
             i = label.index(nom1)
             y = eau[:,i]
@@ -222,7 +260,7 @@ def eau_prop(nom,T):
             p2 = np.interp(T,x, y)
             p = p1*p2*10**-6
             break
-        if case('alg'):
+        while case('alg'):
             nom1 = 'kg'
             i = label.index(nom1)
             y = eau[:,i]
@@ -242,7 +280,7 @@ def eau_prop(nom,T):
             p3 = np.interp(T,x, y)
             p = (p1*p2/p3)*10**-6
             break
-        if case('alf'):
+        while case('alf'):
             nom1 = 'kf'
             i = label.index(nom1)
             y = eau[:,i]
@@ -262,7 +300,7 @@ def eau_prop(nom,T):
             p3 = np.interp(T,x, y)
             p = (p1*p2/p3)*10**-9
             break
-        if case('kf','kg','st'):
+        while case('kf','kg','st'):
             i = label.index(nom)
             y = eau[:,i]
             x = eau[:,0]
@@ -273,7 +311,7 @@ def eau_prop(nom,T):
             p = np.interp(T,x, y)
             p = p*10**-3
             break
-        if case('Cpf','Cpg','hfg'):
+        while case('Cpf','Cpg','hfg'):
             i = label.index(nom)
             y = eau[:,i]
             x = eau[:,0]
@@ -284,7 +322,7 @@ def eau_prop(nom,T):
             p = np.interp(T,x, y)
             p = p*10**3
             break
-        if case('vf'):
+        while case('vf'):
             i = label.index(nom)
             y = eau[:,i]
             x = eau[:,0]
@@ -295,7 +333,7 @@ def eau_prop(nom,T):
             p = np.interp(T,x, y)
             p = p*10**-3
             break
-        if case('rhof'):
+        while case('rhof'):
             nom2 = 'vf'
             i = label.index(nom2)
             y = eau[:,i]
@@ -307,7 +345,7 @@ def eau_prop(nom,T):
             p = np.interp(T,x, y)
             p = 1000.0/p
             break
-        if case('rhog'):
+        while case('rhog'):
             nom2 = 'vg'
             i = label.index(nom2)
             y = eau[:,i]
@@ -319,7 +357,7 @@ def eau_prop(nom,T):
             p = np.interp(T,x, y)
             p = 1000.0/p
             break
-        if case('betaf'):
+        while case('betaf'):
             i = label.index(nom)
             y = eau[:,i]
             x = eau[:,0]
@@ -489,14 +527,14 @@ def propylene_glycol_prop(nom,Tk,fr):
     [125.000000,0.270000,0.320000,0.410000,0.510000,0.570000,0.650000,0.800000,0.950000,1.240000]])
 
     y = np.arange(0.1,1,0.1)
-    for case in switch(nom):
-        if case('temp'):
+    with switch(nom) as case:
+        while case('temp'):
             xV = np.array([0,4.8,9.6,14.5,19.4,24.4,29.4,34.4,39.6,44.7,49.9,55,60])
             Tfu = np.array([0,-1.6,-3,-5.1,-8,-9.6,-14,-16.4,-22,-26.7,-34,-41.6,-48])
             pTT = np.polyfit(xV,Tfu,3);
             p = np.polyval(pTT,100*fr);
             break
-        if case('mu'):
+        while case('mu'):
             z = mu[:,1:11]
             x = mu[:,0]
             Tmin = x[0];
@@ -506,7 +544,7 @@ def propylene_glycol_prop(nom,Tk,fr):
             p = mon_interp2(x,y,z,T,fr)
             p = p*10**-3
             break
-        if case('k'):
+        while case('k'):
             z = k[:,1:11]
             x = k[:,0]
             Tmin = x[0];
@@ -515,7 +553,7 @@ def propylene_glycol_prop(nom,Tk,fr):
                 print('Warning : La valeur de T est en dehors de la table : extrapolation !')
             p = mon_interp2(x,y,z,T,fr)
             break
-        if case('rho'):
+        while case('rho'):
             z = rho[:,1:11]
             x = rho[:,0]
             Tmin = x[0];
@@ -524,7 +562,7 @@ def propylene_glycol_prop(nom,Tk,fr):
                 print('Warning : La valeur de T est en dehors de la table : extrapolation !')
             p = mon_interp2(x,y,z,T,fr)
             break
-        if case('Cp'):
+        while case('Cp'):
             z = Cp[:,1:11]
             x = Cp[:,0]
             Tmin = x[0];
@@ -534,7 +572,7 @@ def propylene_glycol_prop(nom,Tk,fr):
             p = mon_interp2(x,y,z,T,fr)
             p = p*10**3
             break
-        if case('nu'):
+        while case('nu'):
             z = mu[:,1:11]
             x = mu[:,0]
             Tmin = x[0];
@@ -552,7 +590,7 @@ def propylene_glycol_prop(nom,Tk,fr):
             p2 = mon_interp2(x,y,z,T,fr)
             p = p1/p2
             break
-        if case('Pr'):
+        while case('Pr'):
             z = mu[:,1:11]
             x = mu[:,0]
             Tmin = x[0];
@@ -578,7 +616,7 @@ def propylene_glycol_prop(nom,Tk,fr):
             p3 = mon_interp2(x,y,z,T,fr)
             p = p1*p2/p3
             break
-        if case('al'):
+        while case('al'):
             z = k[:,1:11]
             x = k[:,0]
             Tmin = x[0];
@@ -780,14 +818,14 @@ def ethylene_glycol_prop(nom,Tk,fr):
     [125.000000,0.280000,0.330000,0.360000,0.430000,0.490000,0.530000,0.600000,0.710000,0.900000]])
 
     y = np.arange(0.1,1,0.1)
-    for case in switch(nom):
-        if case('temp'):
+    with switch(nom) as case:
+        while case('temp'):
             xV = np.array([0,4.4,8.9,13.6,18.1,22.9,27.7,32.6,37.5,42.5,47.6,52.7,57.8])
             Tfu = np.array([0,-1.4,-3.2,-5.4,-7.8,-10.7,-14.1,-17.9,-22.3,-27.5,-33.8,-41.1,-48.3])
             pTT = np.polyfit(xV,Tfu,3);
             p = np.polyval(pTT,100*fr);
             break
-        if case('mu'):
+        while case('mu'):
             z = mu[:,1:11]
             x = mu[:,0]
             Tmin = x[0];
@@ -797,7 +835,7 @@ def ethylene_glycol_prop(nom,Tk,fr):
             p = mon_interp2(x,y,z,T,fr)
             p = p*10**-3
             break
-        if case('k'):
+        while case('k'):
             z = k[:,1:11]
             x = k[:,0]
             Tmin = x[0];
@@ -806,7 +844,7 @@ def ethylene_glycol_prop(nom,Tk,fr):
                 print('Warning : La valeur de T est en dehors de la table : extrapolation !')
             p = mon_interp2(x,y,z,T,fr)
             break
-        if case('rho'):
+        while case('rho'):
             z = rho[:,1:11]
             x = rho[:,0]
             Tmin = x[0];
@@ -815,7 +853,7 @@ def ethylene_glycol_prop(nom,Tk,fr):
                 print('Warning : La valeur de T est en dehors de la table : extrapolation !')
             p = mon_interp2(x,y,z,T,fr)
             break
-        if case('Cp'):
+        while case('Cp'):
             z = Cp[:,1:11]
             x = Cp[:,0]
             Tmin = x[0];
@@ -825,7 +863,7 @@ def ethylene_glycol_prop(nom,Tk,fr):
             p = mon_interp2(x,y,z,T,fr)
             p = p*10**3
             break
-        if case('nu'):
+        while case('nu'):
             z = mu[:,1:11]
             x = mu[:,0]
             Tmin = x[0];
@@ -843,7 +881,7 @@ def ethylene_glycol_prop(nom,Tk,fr):
             p2 = mon_interp2(x,y,z,T,fr)
             p = p1/p2
             break
-        if case('Pr'):
+        while case('Pr'):
             z = mu[:,1:11]
             x = mu[:,0]
             Tmin = x[0];
@@ -869,7 +907,7 @@ def ethylene_glycol_prop(nom,Tk,fr):
             p3 = mon_interp2(x,y,z,T,fr)
             p = p1*p2/p3
             break
-        if case('al'):
+        while case('al'):
             z = k[:,1:11]
             x = k[:,0]
             Tmin = x[0];

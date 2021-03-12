@@ -1,6 +1,5 @@
-#%%
 from matplotlib import pyplot as plt
-#%%
+
 fig1, (ax1, ax11) = plt.subplots(2, 1, num='Montly Loads')
 ax1.plot(paramRes2.y_num,np.flipud(Res2results.T[:,nb_t-1]), label='$\itt$={} h'.format(temps[nb_t-1]/3600))
 ax1.plot(paramRes2.y_num,np.flipud(Res2results.T[:,round(nb_t/2)]), label='$\itt$={} h'.format(temps[round(nb_t/2)]/3600))  

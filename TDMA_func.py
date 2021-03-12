@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-'''
+"""
 Cette fonction effectue la resolution d'un systeme d'equation lineaire
 [T][X] = [C]
 Methode presente dans le livre de Anderson,1995, Appendix A: Thomas algorithm for the solution of a tridiagonal system of equation
@@ -25,7 +23,7 @@ C = [b(1,1);b(2,1);b(3,1);...;b(n,1)]
 Les variables de sortie sont
 --------------------------------------------------------------------------
 X le vecteur solution
-'''
+"""
 # Library
 import numpy as np
 
