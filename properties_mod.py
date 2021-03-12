@@ -31,7 +31,7 @@ def air_prop(nom,T):
 #
 # prop = air_prop(nom,T)
 # choix de nom  'rho','Cp','mu','nu','k','al','Pr'
-# 		T = temp?rature  (temperature en Kelvin)
+# 		T = temperature  (temperature en Kelvin)
 #
     air = np.array ([ [100.000000,3.556200,1.032000,71.100000,2.000000,9.340000,2.540000,0.786000], \
     [150.000000,2.336400,1.012000,103.400000,4.426000,13.800000,5.840000,0.758000], \
