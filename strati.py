@@ -114,7 +114,7 @@ st.sidebar.markdown('** &#10113 Tank **', unsafe_allow_html=False)
 st.sidebar.markdown('Geometry')
 paramRes2.De = st.sidebar.number_input("Tank outer diameter, [in]", 12, 60, 24,
                                        6) * 0.0254  # [m] Diamètre extérieure du réservoir
-paramRes2.ye = st.sidebar.number_input("Tank eight, [in]", 12, 60, 44,
+paramRes2.ye = st.sidebar.number_input("Tank height, [in]", 12, 96, 44,
                                        6) * 0.0254  # [m] Hauteur extérieure du réservoir
 paramRes2.t_side = st.sidebar.number_input("Tank wall tickness, [in]", 0.0625, 0.5, 0.18750, 0.0625,
                                            format="%.4f") * 0.0254  # [m] épaisseur des parois de côté
@@ -141,7 +141,7 @@ paramRes2.y_num = np.arange(paramRes2.dy / 2, paramRes2.yi,
 
 # Res2 - Flow parameters
 st.sidebar.markdown('Flow parameters')
-paramRes2.m_in = st.sidebar.number_input("HW flow, [gpm]", 0., 10., 2.5, 0.5)/60*3.78541/1000*data.rho_EC  # [kg/s] Débit de la pompe -->60sec/hr | 3.78541liters/gal | 1000liters/m3
+paramRes2.m_in = st.sidebar.number_input("HW flow, [gpm]", 0., 25., 2.5, 0.5)/60*3.78541/1000*data.rho_EC  # [kg/s] Débit de la pompe -->60sec/hr | 3.78541liters/gal | 1000liters/m3
 paramRes2.intlet_EC = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas du réservoir)
 paramRes2.outlet_EC = 0  # [-] Numéro du noeud sortie (0 --> haut du reservoir)
 paramRes2.Ti = conversion.FtoC(st.sidebar.number_input("initial tank temperature, [°F]", 40, 160, 140, 10))  # [°C] Température initiale du réservoir 2
@@ -164,7 +164,7 @@ paramHXefd.pitch = st.sidebar.number_input("Coil pitch, [in]", 0., 6., 2., 0.5) 
 
 # HX EFD - Flow parameters
 st.sidebar.markdown('Flow parameters')
-paramHXefd.m_in = st.sidebar.number_input("HX flow, [gpm]", 0., 10., 0.5, 0.5)/60*3.78541/1000*data.rho_EC  # [kg/s] Débit de consommation d'eau chaude domestique
+paramHXefd.m_in = st.sidebar.number_input("HX flow, [gpm]", 0., 30., 0.5, 0.5)/60*3.78541/1000*data.rho_EC  # [kg/s] Débit de consommation d'eau chaude domestique
 paramHXefd.intlet = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas du réservoir)
 paramHXefd.outlet = 0  # [-] Numéro du noeud sortie (0--> haut du reservoir)
 paramHXefd.nb_y = paramHXefd.intlet - (
