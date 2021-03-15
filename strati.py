@@ -169,7 +169,7 @@ paramHXefd.intlet = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas
 paramHXefd.outlet = 0  # [-] Numéro du noeud sortie (0--> haut du reservoir)
 paramHXefd.nb_y = paramHXefd.intlet - (
         paramHXefd.outlet - 1)  # [noeuds] Nombre de noeuds où l'échangeur EFD est présent
-paramHXefd.Tin = conversion.FtoC(st.sidebar.number_input("HWR temperature, [°F]", 40, 80, 40, 5))  # [°C] Température de l'eau potable de la ville (Température d'entrée EFD)
+paramHXefd.Tin = conversion.FtoC(st.sidebar.number_input("HX inlet temperature, [°F]", 40, 80, 40, 5))  # [°C] Température de l'eau potable de la ville (Température d'entrée EFD)
 paramHXefd.Tink = paramHXefd.Tin + 273.15  # [K] Conversion
 
 # HX EFD - Discretization
@@ -564,16 +564,16 @@ with st.beta_expander("Operating Conditions", expanded=True):
 #  Impression des figures
 with st.beta_expander("Transient Results", expanded=True):
     fig1, (ax1, ax11) = plt.subplots(2, 1, num='Montly Loads')
-    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, nb_t - 1])), label='$\itt$={} h'.format(temps[nb_t - 1] / 3600))
+    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, nb_t - 1])), label='$\itt$={0:.2f} h'.format(temps[nb_t - 1] / 3600))
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 2)])),
-             label='$\itt$={} h'.format(temps[round(nb_t / 2)] / 3600))
+             label='$\itt$={0:.2f} h'.format(temps[round(nb_t / 2)] / 3600))
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 3.25)])),
-             label='$\itt$={} h'.format(temps[round(nb_t / 3.25)] / 3600))
+             label='$\itt$={0:.2f} h'.format(temps[round(nb_t / 3.25)] / 3600))
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 5)])),
-             label='$\itt$={} h'.format(temps[round(nb_t / 5)] / 3600))
+             label='$\itt$={0:.2f} h'.format(temps[round(nb_t / 5)] / 3600))
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 10)])),
-             label='$\itt$={} h'.format(temps[round(nb_t / 10)] / 3600))
-    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, 0])), label='$\itt$={} h'.format(temps[0] / 3600))
+             label='$\itt$={0:.2f} h'.format(temps[round(nb_t / 10)] / 3600))
+    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, 0])), label='$\itt$={0:.2f} h'.format(temps[0] / 3600))
     ax1.set_xlabel('$\ity$ [ft]', color='k', fontname='Lucida Bright', fontsize=9)
     ax1.set_ylabel('$\itT_{HW}$ [°F]', color='k', fontname='Lucida Bright', fontsize=9)
     ax11.plot(temps / 3600, conversion.CtoF(Res2results.T[0, :]),
