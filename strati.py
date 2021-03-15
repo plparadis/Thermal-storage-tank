@@ -2,7 +2,7 @@
 ###########################################################################
 ####-- Heat storage tank with thermal stratification - Main routine --#####
 #-------------------------------------------------------------------------#
-#            Par Pierre-Luc Paradis et Marie-H�l�ne Talbot               #
+#            Par Pierre-Luc Paradis et Marie-Hélène Talbot               #
 #                            September 2016                               #
 #-------------------------------------------------------------------------#
 # This program is the main routine that solves the 1-D temperature field
@@ -20,6 +20,46 @@ from Colebrook_func import Colebrook
 from Dittus_Boelter_func import Dittus_Boelter
 from Dittus_Boelter_mod_func import Dittus_Boelter_mod
 from matplotlib import pyplot as plt
+import streamlit as st
+from matplotlib import pyplot as plt
+import UnitConversionModule as conversion
+
+TextColor = "#404041"
+plt.rcParams['text.color'] = TextColor
+plt.rcParams['axes.labelcolor'] = TextColor
+plt.rcParams['xtick.color'] = TextColor
+plt.rcParams['ytick.color'] = TextColor
+fontname = 'Helvetica LT Std'
+
+st.set_page_config(page_title="Thermal Storage Tank",
+                   page_icon="static/favicon.ico",
+                   layout="centered",
+                   initial_sidebar_state="auto")
+
+col1, col2 = st.beta_columns((3, 1))
+col1.title("Thermal Storage Tank")
+with col2:
+    col2.image("static/logo.png", use_column_width=True, output_format='PNG')
+
+with st.beta_expander("Tool description", expanded=True):
+    st.markdown("A simple simulation tool to simulate stratified thermal storage tank as seen below.")
+    st.image("static/Schematic.JPG", use_column_width=True, output_format='JPG')
+
+    st.markdown("A heat balance on a slice of the tank gives")
+    st.write(r'''
+        $$
+        \underbrace{(rho*c_p)_{SHW} * 
+        \frac{\partial T_{SHW}}{\partial t}}_{\text{Transient term}}
+        =
+        \underbrace{\frac{\partial }{\partial y} \lbrack (k_{SHW}+\Delta k) \frac{\partial T_{SHW}}{\partial y} \rbrack}_{\text{1-D conduction term}} -
+        \underbrace{\frac{(\dot{m}c_p)_{SHW}}{A_{SHW}}\frac{\partial T_{SHW}}{\partial y}}_{\text{Advection term}} +
+        $$
+        ''')
+    st.write(r'''
+        $$
+        \underbrace{\frac{dq_{DCW} - dq_{loss}}{d\forall_{SHW}}}_{\text{Source terms}}     
+        $$
+        ''')
 
 data = MatlabStruct()
 paramRes2 = MatlabStruct()
@@ -57,21 +97,31 @@ data.rho_EC = properties.eau_prop('vf', 300) ** -1  # [kg/m3] Density de l'eau �
 data.Cp_EC = properties.eau_prop('Cpf', 300)  # [J/(kg K)] Heat capacity de l'eau à 300[K]
 data.alpha_EC = data.k_EC / (data.rho_EC * data.Cp_EC)  # [m^2/s] Thermal diffusivity de l'eau à 300[K]
 
-data.Tairk = 20 + 273.15  # [K] Température dans la salle mécanique
+data.Tairk = conversion.FtoC(st.sidebar.number_input("Mechanical room Temp. [°F]", 40, 100,
+                                     70, 2)) + 273.15  # [K] Température dans la salle mécanique
 data.critere = 1e-6  # [-] Critère de convergence
 
 # Parametres de la resolution temporelle
-nb_t = 10  # [-] Nombre de pas de temps
-dt = 900  # [s] Pas de temps ( 300 [s] --> 5 [min], 900 [s] --> 15 [min])
-temps = np.arange(start=0, stop=(nb_t) * dt, step=dt).transpose()  # [s] Vecteur des pas de temps
+st.sidebar.markdown('** &#10112 Transient solution parameter **', unsafe_allow_html=False)
+nb_t = st.sidebar.number_input("Number of time steps", 1, 60, 10)  # [-] Nombre de pas de temps
+dt = st.sidebar.number_input("Time step, [s]", 300, 3600, 900,
+                             300)  # [s] Pas de temps ( 300 [s] --> 5 [min], 900 [s] --> 15 [min])
+temps = np.arange(start=0, stop=nb_t * dt, step=dt).transpose()  # [s] Vecteur des pas de temps
 
 # Reservoir #2 - EC
 # Res2 - Geometry
-paramRes2.De = 24 * 0.0254  # [m] Diamètre extérieure du réservoir
-paramRes2.ye = 44 * 0.0254  # [m] Hauteur extérieure du réservoir
-paramRes2.t_side = 0.18750 * 0.0254  # [m] épaisseur des parois de côté
-paramRes2.t_top = 0.125 * 0.0254  # [m] épaisseur de la paroi du dessus
-paramRes2.t_bottom = 0.375 * 0.0254  # [m] épaisseur de la paroi du dessous
+st.sidebar.markdown('** &#10113 Tank **', unsafe_allow_html=False)
+st.sidebar.markdown('Geometry')
+paramRes2.De = st.sidebar.number_input("Tank outer diameter, [in]", 12, 60, 24,
+                                       6) * 0.0254  # [m] Diamètre extérieure du réservoir
+paramRes2.ye = st.sidebar.number_input("Tank eight, [in]", 12, 60, 44,
+                                       6) * 0.0254  # [m] Hauteur extérieure du réservoir
+paramRes2.t_side = st.sidebar.number_input("Tank wall tickness, [in]", 0.0625, 0.5, 0.18750, 0.0625,
+                                           format="%.4f") * 0.0254  # [m] épaisseur des parois de côté
+paramRes2.t_top = st.sidebar.number_input("Tank top wall tickness, [in]", 0.0625, 0.5, 0.125, 0.0625,
+                                          format="%.4f") * 0.0254  # [m] épaisseur de la paroi du dessus
+paramRes2.t_bottom = st.sidebar.number_input("Tank bottom wall tickness, [in]", 0.0625, 0.5, 0.375, 0.0625,
+                                             format="%.4f") * 0.0254  # [m] épaisseur de la paroi du dessous
 paramRes2.Di = paramRes2.De - 2 * paramRes2.t_side  # [m] Diamètre intérieure du réservoir
 paramRes2.yi = paramRes2.ye - paramRes2.t_top - paramRes2.t_bottom  # [m] Hauteur intérieure du réservoir
 paramRes2.As = np.pi * paramRes2.Di ** 2 / 4  # [m^2] Aire de la section interne du réservoir
@@ -79,41 +129,47 @@ paramRes2.As_ext = np.pi * paramRes2.De ** 2 / 4  # [m^2] Aire de la section ext
 paramRes2.Vres = paramRes2.As * paramRes2.yi  # [m^3] Volume interne du réservoir
 paramRes2.Vres_ext = paramRes2.As_ext * paramRes2.ye  # [m^3] Volume externe du réservoir
 paramRes2.Vss_tank = paramRes2.Vres_ext - paramRes2.Vres  # [m^3] Volume d'acier inoxydable du réservoir
-paramRes2.t_iso = 2 * 0.0254  # [m] épaisseur de l'isolant (2 pouces)
+paramRes2.t_iso = st.sidebar.number_input("Tank insulation thickness, [in]", 0.25, 4., 2., 0.25,
+                                          format="%.2f") * 0.0254  # [m] épaisseur de l'isolant (2 pouces)
 
 # Res2 - Discretization
-paramRes2.nb_y = 5  # [noeuds] Nombre de noeuds du reservoir de stockage (arbritraire)
+st.sidebar.markdown('Discretization')
+paramRes2.nb_y = st.sidebar.number_input("Number of vertical Tank nodes", 1, 15, 5, 1)  # [noeuds] Nombre de noeuds du reservoir de stockage (arbritraire)
 paramRes2.dy = paramRes2.yi / paramRes2.nb_y  # [m] Distance entre les noeuds (selon l'axe y)
 paramRes2.y_num = np.arange(paramRes2.dy / 2, paramRes2.yi,
                             paramRes2.dy)  # [m] Vecteur de position de chacun des noeuds
 
 # Res2 - Flow parameters
-paramRes2.m_in = 0.13  # [kg/s] Débit de la pompe
+st.sidebar.markdown('Flow parameters')
+paramRes2.m_in = st.sidebar.number_input("HW flow, [gpm]", 0., 10., 2.5, 0.5)/60*3.78541/1000*data.rho_EC  # [kg/s] Débit de la pompe -->60sec/hr | 3.78541liters/gal | 1000liters/m3
 paramRes2.intlet_EC = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas du réservoir)
-paramRes2.outlet_EC = 0  # [-] Num�ro du noeud sortie (0 --> haut du reservoir)
-paramRes2.Ti = 60  # [°C] Température initiale du réservoir 2
+paramRes2.outlet_EC = 0  # [-] Numéro du noeud sortie (0 --> haut du reservoir)
+paramRes2.Ti = conversion.FtoC(st.sidebar.number_input("initial tank temperature, [°F]", 40, 160, 140, 10))  # [°C] Température initiale du réservoir 2
 paramRes2.Tik = paramRes2.Ti + 273.15  # [K] Conversion
-paramRes2.Tin_EC = 20  # [°C] Température de retour du réseau de chauffage (Température d'entrée EC)
+paramRes2.Tin_EC = conversion.FtoC(st.sidebar.number_input("HWR temperature, [°F]",60, 160, 120, 10))  # [°C] Température de retour du réseau de chauffage (Température d'entrée EC)
 paramRes2.Tink_EC = paramRes2.Tin_EC + 273.15  # [K] Conversion
 
 # Échangeur EFD
+st.sidebar.markdown('** &#10114 Heat Exchanger **', unsafe_allow_html=False)
 # HX EFD - Geometry
-paramHXefd.Do = 0.75 * 0.0254  # [m] Diamètre extérieur du tuyau (3/4 pouces)
-paramHXefd.t_pipe = 0.0486 * 0.0254  # [m] épaisseur de la paroi du tuyau
+st.sidebar.markdown('Geometry')
+paramHXefd.Do = st.sidebar.number_input("Coil pipe outside diameter, [in]", 0., 2., 0.75, 0.25) * 0.0254  # [m] Diamètre extérieur du tuyau (3/4 pouces)
+paramHXefd.t_pipe = st.sidebar.number_input("Coil pipe wall thickness, [in]", 0., 0.125, 0.0486, 0.0001) * 0.0254  # [m] épaisseur de la paroi du tuyau
 paramHXefd.Di = paramHXefd.Do - 2 * paramHXefd.t_pipe  # [m] diamètre intérieur du tuyau
-paramHXefd.Ltot = 496 * .0254  # [m] Longueur du tuyau
+paramHXefd.Ltot = st.sidebar.number_input("Total length of the coiled pipe, [in]", 0, 1200, 496, 6) * .0254  # [m] Longueur du tuyau
 paramHXefd.As = np.pi * paramHXefd.Di ** 2 / 4  # [m^2] Aire de la section interne de la conduite
 paramHXefd.Aext = np.pi * paramHXefd.Do ** 2 / 4  # [m^2] Aire de la section externe de la conduite
-paramHXefd.D = 20 * 0.0254  # [m] Diam�tre de la spirale de l'échangeur
-paramHXefd.pitch = 2 * 0.0254  # [m] Pitch de la spirale de l'échangeur
+paramHXefd.D = st.sidebar.number_input("Coil internal diameter, [in]", 0, 60, 20, 2) * 0.0254  # [m] Diamètre de la spirale de l'échangeur
+paramHXefd.pitch = st.sidebar.number_input("Coil pitch, [in]", 0., 6., 2., 0.5) * 0.0254  # [m] Pitch de la spirale de l'échangeur
 
 # HX EFD - Flow parameters
-paramHXefd.m_in = 0.5  # [kg/s] Débit de consommation d'eau chaude domestique
+st.sidebar.markdown('Flow parameters')
+paramHXefd.m_in = st.sidebar.number_input("HX flow, [gpm]", 0., 10., 0.5, 0.5)/60*3.78541/1000*data.rho_EC  # [kg/s] Débit de consommation d'eau chaude domestique
 paramHXefd.intlet = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas du réservoir)
 paramHXefd.outlet = 0  # [-] Numéro du noeud sortie (0--> haut du reservoir)
 paramHXefd.nb_y = paramHXefd.intlet - (
         paramHXefd.outlet - 1)  # [noeuds] Nombre de noeuds où l'échangeur EFD est présent
-paramHXefd.Tin = 4  # [°C] Température de l'eau potable de la ville (Température d'entrée EFD)
+paramHXefd.Tin = conversion.FtoC(st.sidebar.number_input("HWR temperature, [°F]", 40, 80, 40, 5))  # [°C] Température de l'eau potable de la ville (Température d'entrée EFD)
 paramHXefd.Tink = paramHXefd.Tin + 273.15  # [K] Conversion
 
 # HX EFD - Discretization
@@ -134,39 +190,29 @@ M_topbott[0] = 1  # Identification du noeud du haut (Condition aux frontières)
 M_topbott[-1] = 1  # Identification du noeud du bas (Condition aux frontières)
 
 M_debit_D = np.zeros([paramRes2.nb_y, 1])
-M_debit_D[
-paramRes2.outlet_EC:paramRes2.intlet_EC] = 1  # Identification des noeuds de débit EC pour la diagonale D (Matrice des coefficients)
+M_debit_D[paramRes2.outlet_EC:paramRes2.intlet_EC] = 1  # Identification des noeuds de débit EC pour la diagonale D (Matrice des coefficients)
 
 M_debit_A = np.zeros([paramRes2.nb_y - 1, 1])
-M_debit_A[
-paramRes2.outlet_EC:paramRes2.intlet_EC - 1] = 1  # Identification des noeuds de débit EC pour la diagonale A (Matrice des coefficients)
+M_debit_A[paramRes2.outlet_EC:paramRes2.intlet_EC - 1] = 1  # Identification des noeuds de débit EC pour la diagonale A (Matrice des coefficients)
 
 M_debit_C = np.zeros([paramRes2.nb_y, 1])
-M_debit_C[
-    paramRes2.intlet_EC - 1] = 1  # Identification des noeuds de débit EC pour la diagonale C (Matrice des coefficients)
+M_debit_C[paramRes2.intlet_EC - 1] = 1  # Identification des noeuds de débit EC pour la diagonale C (Matrice des coefficients)
 
 M_HXefd = np.zeros([paramRes2.nb_y, 1])
 M_HXefd[paramHXefd.outlet:paramHXefd.intlet] = 1  # Localisation de l'échangeur EFD
 
 # Initialisation du vecteur de solution du RES2 - Température EC
-Res2results.Tk = np.zeros([paramRes2.nb_y,
-                           nb_t]) + paramRes2.Tik  # [K] Initialisation de la matrice de température EC (ligne = #noeud et colonne = pas de temps)
+Res2results.Tk = np.zeros([paramRes2.nb_y, nb_t]) + paramRes2.Tik  # [K] Initialisation de la matrice de température EC (ligne = #noeud et colonne = pas de temps)
 
 # Initialisation des vecteurs de solutions de l'échangeur EFD
-HXefdresults.Tink = np.zeros([paramRes2.nb_y,
-                              nb_t])  # [K] Initialisation de la température dans l'échangeur EFD à l'entrée de chaque noeud du réservoir
-HXefdresults.Tink[:, [0]] = Res2results.Tk[:, [
-                                                  0]] * M_HXefd  # [K] Initialisation de la température dans l'échangeur EFD (Conditions initiales --> Time step #1)
-HXefdresults.Tink[paramHXefd.intlet - 1, np.arange(1, nb_t,
-                                                   1)] = paramHXefd.Tink  # [K] Initialisation de la température à l'entrée de l'échangeur d'EFD (Boundary condition)
+HXefdresults.Tink = np.zeros([paramRes2.nb_y, nb_t])  # [K] Initialisation de la température dans l'échangeur EFD à l'entrée de chaque noeud du réservoir
+HXefdresults.Tink[:, [0]] = Res2results.Tk[:, [0]] * M_HXefd  # [K] Initialisation de la température dans l'échangeur EFD (Conditions initiales --> Time step #1)
+HXefdresults.Tink[paramHXefd.intlet - 1, np.arange(1, nb_t, 1)] = paramHXefd.Tink  # [K] Initialisation de la température à l'entrée de l'échangeur d'EFD (Boundary condition)
 
-HXefdresults.Toutk = np.copy(
-    HXefdresults.Tink)  # [K] Initialisation de la température dans l'échangeur EFD à la sortie de chaque noeud du réservoir
+HXefdresults.Toutk = np.copy(HXefdresults.Tink)  # [K] Initialisation de la température dans l'échangeur EFD à la sortie de chaque noeud du réservoir
 
-HXefdresults.Ts_outk = np.zeros(
-    [paramRes2.nb_y, nb_t])  # [K] Initialisation de la température de surface externe de l'échangeur d'EFD
-HXefdresults.Ts_outk[:, [1]] = Res2results.Tk[:, [
-                                                     0]] * M_HXefd  # [K] Initialisation de la température de surface externe de l'échangeur d'EFD (Conditions initiales --> Time step #1)
+HXefdresults.Ts_outk = np.zeros([paramRes2.nb_y, nb_t])  # [K] Initialisation de la température de surface externe de l'échangeur d'EFD
+HXefdresults.Ts_outk[:, [1]] = Res2results.Tk[:, [0]] * M_HXefd  # [K] Initialisation de la température de surface externe de l'échangeur d'EFD (Conditions initiales --> Time step #1)
 
 # Initialisation des vecteurs pour le calcul des pertes thermiques du réservoir
 h_convEC = np.zeros([paramRes2.nb_y + 2, 1])  # [W/(m^2) K] Convection heat transfer coefficient in EC
@@ -436,7 +482,7 @@ for m in range(1, nb_t, 1):
 
                     # Calcul des résistances des flux de chaleur entre l'échangeur ECD et le réservoir
                     R_convHXefd_in[i, 0] = (h_convHXefd_in[
-                                                i, 0] * np.pi * paramHXefd.Di * paramHXefd.L) ** -1;  # [K/W] Résistance convection interne de l'échangeur EFD
+                                                i, 0] * np.pi * paramHXefd.Di * paramHXefd.L) ** -1  # [K/W] Résistance convection interne de l'échangeur EFD
                     R_convHXefd_out[i, 0] = (h_convHXefd_out[
                                                  i, 0] * np.pi * paramHXefd.Do * paramHXefd.L) ** -1  # [K/W] Résistance convection externe de l'échangeur EFD
                     R_HXefd[i, 0] = R_convHXefd_in[i, 0] + R_condHXecd_wall + R_convHXefd_out[
@@ -501,64 +547,73 @@ for m in range(1, nb_t, 1):
             break
 
 # Conversion des résultats de K à °C
-HXefdresults.Tin = HXefdresults.Tink - 273.15;
-HXefdresults.Tout = HXefdresults.Toutk - 273.15;
-Res2results.T = Res2results.Tk - 273.15;
+HXefdresults.Tin = HXefdresults.Tink - 273.15
+HXefdresults.Tout = HXefdresults.Toutk - 273.15
+Res2results.T = Res2results.Tk - 273.15
+
 
 # Affichage des conditions d'opération
-print('La température de la pièce est de {0}°C.'.format(data.Tairk - 273.15))
-print('La température initial du réservoir est {0}°C.'.format(paramRes2.Ti))
-print('La température du retour d\'eau chaude est {0}°C '.format(paramRes2.Tin_EC))
-print('avec un débit de {0:.2f} kg/s '.format(paramRes2.m_in))
-print('La température de l\'eau chaude domestique à l\'entrée est {0}°C.'.format(paramHXefd.Tin))
-print('avec un débit de {0:.2f} kg/s \n'.format(paramHXefd.m_in))
+with st.beta_expander("Operating Conditions", expanded=True):
+    st.markdown('Temperature in the mechanical room: **{:,.0f}°F**.'.format(conversion.CtoF(data.Tairk - 273.15)))
+    st.markdown('Initial tank temperature: **{:,.0f}°F**.'.format(conversion.CtoF(paramRes2.Ti)))
+    st.markdown('Temperature of Hot Water Return (HWR): **{:,.0f}°F**.'.format(conversion.CtoF(paramRes2.Tin_EC)))
+    st.markdown('Hot water flow: **{0:.2f} gpm**.'.format(paramRes2.m_in*60/3.78541*1000/data.rho_EC))
+    st.markdown('Coil Heat Exchanger (HX) inlet temperature: **{:,.0f}°F.**'.format(conversion.CtoF(paramHXefd.Tin)))
+    st.markdown('Coil Heat exchanger flow: **{0:.2f} gpm**.'.format(paramHXefd.m_in*60/3.78541*1000/data.rho_EC))
 
 #  Impression des figures
-fig1, (ax1, ax11) = plt.subplots(2, 1, num='Montly Loads')
-ax1.plot(paramRes2.y_num, np.flipud(Res2results.T[:, nb_t - 1]), label='$\itt$={} h'.format(temps[nb_t - 1] / 3600))
-ax1.plot(paramRes2.y_num, np.flipud(Res2results.T[:, round(nb_t / 2)]),
-         label='$\itt$={} h'.format(temps[round(nb_t / 2)] / 3600))
-ax1.plot(paramRes2.y_num, np.flipud(Res2results.T[:, round(nb_t / 3.25)]),
-         label='$\itt$={} h'.format(temps[round(nb_t / 3.25)] / 3600))
-ax1.plot(paramRes2.y_num, np.flipud(Res2results.T[:, round(nb_t / 5)]),
-         label='$\itt$={} h'.format(temps[round(nb_t / 5)] / 3600))
-ax1.plot(paramRes2.y_num, np.flipud(Res2results.T[:, round(nb_t / 10)]),
-         label='$\itt$={} h'.format(temps[round(nb_t / 10)] / 3600))
-ax1.plot(paramRes2.y_num, np.flipud(Res2results.T[:, 0]), label='$\itt$={} h'.format(temps[0] / 3600))
-ax1.set_xlabel('$\ity$ [m]', color='k', fontname='Lucida Bright', fontsize=9)
-ax1.set_ylabel('$\itT_{SHW}$ [°C]', color='k', fontname='Lucida Bright', fontsize=9)
-ax11.plot(temps / 3600, Res2results.T[0, :],
-          label='$\ity$={0:.2f} m'.format(paramRes2.y_num[paramRes2.nb_y - 1]))  # Haut du réservoir
-ax11.plot(temps / 3600, Res2results.T[round(paramRes2.nb_y / 2), :],
-          label='$\ity$={0:.2f} m'.format(paramRes2.y_num[round(paramRes2.nb_y / 2)]))  # Mi hauteur
-ax11.plot(temps / 3600, Res2results.T[paramRes2.nb_y - 1, :],
-          label='$\ity$={0:.2f} m'.format(paramRes2.y_num[0]))  # Bas du réservoir
-ax11.plot(temps / 3600, HXefdresults.Tout[0, :], label='$\itDCW_{out}$')  # sortie DHW HX
-ax11.set_xlabel('Time [h]', color='k', fontname='Lucida Bright', fontsize=9)
-ax11.set_ylabel('$\itT_{SHW}$ or $\itT_{DCW_{out}}$ [°C]', color='k', fontname='Lucida Bright', fontsize=9)
-ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.25), ncol=3, prop={'family': 'Lucida Bright', 'size': 9})
-ax11.legend(loc='upper center', bbox_to_anchor=(0.5, -0.20), ncol=2, prop={'family': 'Lucida Bright', 'size': 9})
-fig1.set_figheight(fig1.get_figheight() * 1.5)
-fig1.set_figwidth(fig1.get_figwidth())
-fig1.tight_layout()  # otherwise the right y-label is slightly clipped
-fig1.savefig('Tank Simulation results.jpg', format='JPG', dpi=300)
+with st.beta_expander("Transient Results", expanded=True):
+    fig1, (ax1, ax11) = plt.subplots(2, 1, num='Montly Loads')
+    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, nb_t - 1])), label='$\itt$={} h'.format(temps[nb_t - 1] / 3600))
+    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 2)])),
+             label='$\itt$={} h'.format(temps[round(nb_t / 2)] / 3600))
+    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 3.25)])),
+             label='$\itt$={} h'.format(temps[round(nb_t / 3.25)] / 3600))
+    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 5)])),
+             label='$\itt$={} h'.format(temps[round(nb_t / 5)] / 3600))
+    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 10)])),
+             label='$\itt$={} h'.format(temps[round(nb_t / 10)] / 3600))
+    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, 0])), label='$\itt$={} h'.format(temps[0] / 3600))
+    ax1.set_xlabel('$\ity$ [ft]', color='k', fontname='Lucida Bright', fontsize=9)
+    ax1.set_ylabel('$\itT_{HW}$ [°F]', color='k', fontname='Lucida Bright', fontsize=9)
+    ax11.plot(temps / 3600, conversion.CtoF(Res2results.T[0, :]),
+              label='$\ity$={0:.2f} ft'.format(conversion.mtoft(paramRes2.y_num[paramRes2.nb_y - 1])))  # Haut du réservoir
+    ax11.plot(temps / 3600, conversion.CtoF(Res2results.T[round(paramRes2.nb_y / 2), :]),
+              label='$\ity$={0:.2f} ft'.format(conversion.mtoft(paramRes2.y_num[round(paramRes2.nb_y / 2)])))  # Mi hauteur
+    ax11.plot(temps / 3600, conversion.CtoF(Res2results.T[paramRes2.nb_y - 1, :]),
+              label='$\ity$={0:.2f} ft'.format(conversion.mtoft(paramRes2.y_num[0])))  # Bas du réservoir
+    if paramHXefd.m_in>0:
+        ax11.plot(temps / 3600, conversion.CtoF(HXefdresults.Tout[0, :]), label='$\itHX_{out}$')  # sortie DHW HX
+    ax11.set_xlabel('Time [h]', color='k', fontname='Lucida Bright', fontsize=9)
+    ax11.set_ylabel('$\itT_{HW}$ or $\itT_{HX_{out}}$ [°F]', color='k', fontname='Lucida Bright', fontsize=9)
+    ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.25), ncol=3, prop={'family': 'Lucida Bright', 'size': 9})
+    ax11.legend(loc='upper center', bbox_to_anchor=(0.5, -0.20), ncol=2, prop={'family': 'Lucida Bright', 'size': 9})
+    fig1.set_figheight(fig1.get_figheight() * 1.5)
+    fig1.set_figwidth(fig1.get_figwidth())
+    fig1.tight_layout()  # otherwise the right y-label is slightly clipped
+    #fig1.savefig('Tank Simulation results.jpg', format='JPG', dpi=300)
+    st.pyplot(fig1)
 
 # Analyse des Échelles de temps
-print('Volume interne du réservoir = {0:.2f} [m3]'.format(paramRes2.Vres))
-print('Volume occupé par l''échangeur EFD = {0:.2f} [m3]'.format(paramHXefd.Aext * paramHXefd.Ltot))
-Volume_eau_EC = paramRes2.Vres - paramHXefd.Aext * paramHXefd.Ltot
-print('Volume d''eau EC = {0:.2f} [m3]'.format(Volume_eau_EC))
-Volume_eau_EFD = paramHXefd.As * paramHXefd.Ltot
-print('Volume d''eau dans l''échangeur EFD = {0:.2f} [m3]'.format(Volume_eau_EFD))
-Volume_cuivre = (paramHXefd.Aext - paramHXefd.As) * paramHXefd.Ltot
-print('Volume de Cuivre dans l''échangeur EFD = {0:.2f} [m3]'.format(Volume_cuivre))
+with st.beta_expander("Time Scale Analysis", expanded=True):
+    st.markdown('### Volume')
+    st.markdown('Tank internal volume: **{0:.2f} [m3]**'.format(paramRes2.Vres))
+    st.markdown("Volume of the Coil Heat Exchanger in the tank: **{0:.4f} [m3]**".format(paramHXefd.Aext * paramHXefd.Ltot))
+    Volume_eau_EC = paramRes2.Vres - paramHXefd.Aext * paramHXefd.Ltot
+    st.markdown("Volume of Hot Water in the tank (HW): **{0:.2f} [m3]**".format(Volume_eau_EC))
+    Volume_eau_EFD = paramHXefd.As * paramHXefd.Ltot
+    st.markdown("Volume of Water in the Coil Heat Exchanger: **{0:.4f} [m3]**".format(Volume_eau_EFD))
+    Volume_cuivre = (paramHXefd.Aext - paramHXefd.As) * paramHXefd.Ltot
+    st.markdown("Volume of Copper in the Coil heat Exchanger **{0:.2f} [m3]**".format(Volume_cuivre))
+    st.markdown('### Thermal capacity')
+    st.markdown("Total Thermal capacity of the water in the tank: **{0:.2f} [kJ/K]**".format(data.rho_EC * Volume_eau_EC * data.Cp_EC * 1e-3))
+    st.markdown("Total Thermal capacity of the water in the coil heat exchanger @300K: **{0:.2f} [kJ/K]**".format(data.rho_EC * Volume_eau_EFD * data.Cp_EC * 1e-3))
+    st.markdown("Total thermal capacity of Copper: **{0:.2f} [kJ/K]**".format(
+        data.rho_cu * Volume_cuivre * data.cp_cu * 1e-3))
+    st.markdown('### Transport time')
+    st.markdown('Transport time of Hot Water (HW): **{0:.2f} [min]**'.format(data.rho_EC * Volume_eau_EC / paramRes2.m_in / 60))
+    st.markdown('Transport time of water in the coil heat exchanger: **{0:.2f} [s]**'.format(data.rho_EC * Volume_eau_EFD / paramHXefd.m_in))
 
-print('Masse thermique d''eau EC = {0:.2f} [kJ/K]'.format(data.rho_EC * Volume_eau_EC * data.Cp_EC * 1e-3))
-print('Masse thermique d''eau EFD à 300[K] = {0:.2f} [kJ/K]'.format(data.rho_EC * Volume_eau_EFD * data.Cp_EC * 1e-3))
-print('Masse thermique du Cuivre de l''échangeur EFD = {0:.2f} [kJ/K]'.format(
-    data.rho_cu * Volume_cuivre * data.cp_cu * 1e-3))
+    st.markdown('Tank characteristic time: **{0:.2f} [h]**'.format((paramRes2.Di / 2) ** 2 / (4 * data.alpha_EC) / 3600))
 
-print('Temps de transport SHW = {0:.2f} [min]'.format(data.rho_EC * Volume_eau_EC / paramRes2.m_in / 60))
-print('Temps de transport EFD = {0:.2f} [s]'.format(data.rho_EC * Volume_eau_EFD / paramHXefd.m_in))
-
-print('Temps caractéristique du réservoir = {0:.2f} [h]'.format((paramRes2.Di / 2) ** 2 / (4 * data.alpha_EC) / 3600))
+print("**** Calculation Successfull ****")
