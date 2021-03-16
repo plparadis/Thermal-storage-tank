@@ -75,6 +75,7 @@ propriHXefd_in = MatlabStruct()
 data.theta = -np.pi / 2  # [radians] Inclinaison de la conduite par rapport à la verticale (-pi/2 --> horizontal, 0 --> vertical)
 data.g = 9.81  # [m/s2] Gravitational acceleration
 data.rugosity_ratio = 1e-6  # [-] Rugosite relative des conduites (1e-6 --> conduites lisses)
+mixing = st.sidebar.checkbox("Handle Temperature inversion",value=False)  # Active/désactive l'Algorithme de mixing
 
 data.kss = 14.9  # [W/(m K)] Thermal conductivity of stainless steel at 300[K]
 data.rho_ss = 7900  # [kg/m3] Density of stainless steel at 300[K]
@@ -545,6 +546,17 @@ for m in range(1, nb_t, 1):
         if iterTres2 >= limit_iter_Tres2:
             print('Temperature field not converged - ResiduTres2 = {}'.format(erreurTres2[iterTres2, 0]))
             break
+    if mixing:
+        MixingCounter = 1  # Initialisation du compteur associé à l'algorithme d'inversion
+        Inversion = Res2results.Tk[0:-1, [m]] < Res2results.Tk[1::, [m]]  # identifie les noeuds avec inversion
+        CritereInversion = np.sum(Inversion)  # Initialisation du critère d'inversion
+        if CritereInversion > 0:
+            LowerNode = np.where(Inversion)[0][-1] + 1  # index du Noeud au bas de l'inversion
+            while CritereInversion > 0:
+                Res2results.Tk[(LowerNode - MixingCounter):LowerNode+1, [m]] = np.mean(Res2results.Tk[(LowerNode - MixingCounter):LowerNode+1, [m]])
+                Inversion = Res2results.Tk[0:-1, [m]] < Res2results.Tk[1::, [m]]
+                CritereInversion = np.sum(Inversion)
+                MixingCounter = MixingCounter + 1
 
 # Conversion des résultats de K à °C
 HXefdresults.Tin = HXefdresults.Tink - 273.15
