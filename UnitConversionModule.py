@@ -119,7 +119,7 @@ def BTUtoJ(eBTU):
     # eJ: Energie [J]
     # eBTU: Energie [btu]
     # Conversion: 1 Btu = 1055 Joules
-    eJ = eBTU*1055;
+    eJ = eBTU*1055
     return eJ
 
 def JtoBTU(eJ):
@@ -127,7 +127,7 @@ def JtoBTU(eJ):
     # eJ: Energie [J]
     # eBTU: Energie [btu]
     # Conversion: 1 Btu = 1055 Joules
-    eBTU = eJ/1055;
+    eBTU = eJ/1055
     return eBTU
 
 def CFMtom3sec(VCFM):
@@ -135,7 +135,7 @@ def CFMtom3sec(VCFM):
     # VCFM: Debit volumique [CFM]
     # Vm3sec: Debit volumique [m3/sec]
     # Conversion: 2118.8799727597 CFM = 1 m3/sec
-    Vm3sec = VCFM/2118.8799727597;
+    Vm3sec = VCFM/2118.8799727597
     return Vm3sec
 
 
@@ -144,7 +144,7 @@ def m3sectoCFM(Vm3sec):
     # Vm3sec: Debit volumique [m3/sec]
     # VCFM: Debit volumique [CFM]
     # Conversion: 1 m3/sec = 2 118.88 [CFM]
-    VCFM = Vm3sec*2118.8799727597;
+    VCFM = Vm3sec*2118.8799727597
     return VCFM
 
 def GPMtoLPS(Vgpm):
@@ -152,7 +152,7 @@ def GPMtoLPS(Vgpm):
     # Vgpm: Debit volumique [gpm]
     # Vlps: Debit volumique [l/sec]
     # Conversion: 3.7854118 l = 1 gallon
-    Vlps = Vgpm*3.7854118/60;
+    Vlps = Vgpm*3.7854118/60
     return Vlps
 
 def LPStoGPM(Vlps):
@@ -160,7 +160,7 @@ def LPStoGPM(Vlps):
     # Vgpm: Debit volumique [gpm]
     # Vlps: Debit volumique [l/sec]
     # Conversion: 3.7854118 l = 1 gallon
-    Vgpm = Vlps/3.7854118*60;
+    Vgpm = Vlps/3.7854118*60
     return Vgpm
 
 def ft2tom2(ft2):
@@ -169,7 +169,7 @@ def ft2tom2(ft2):
     # m2: area [m2]
     # note: 12 [in] = 1 [ft] and 1 [in] = 25.4 [mm] and 1000 [mm] = 1 [m]
     # Conversion: 
-    m2 = ft2*(12*25.4/1000)**2;
+    m2 = ft2*(12*25.4/1000)**2
     return m2
 
 def m2toft2(m2):
@@ -178,7 +178,7 @@ def m2toft2(m2):
     # m2: area [m2]
     # note: 12 [in] = 1 [ft] and 1 [in] = 25.4 [mm] and 1000 [mm] = 1 [m]
     # Conversion: 
-    ft2 = m2*(12*25.4/1000)**-2;
+    ft2 = m2*(12*25.4/1000)**-2
     return ft2
 
 def mtoft(m):
@@ -187,7 +187,7 @@ def mtoft(m):
     # m: length [m]
     # note: 12 [in] = 1 [ft] and 1 [in] = 25.4 [mm] and 1000 [mm] = 1 [m]
     # Conversion: 
-    ft = m*(12*25.4/1000)**-1;
+    ft = m*(12*25.4/1000)**-1
     return ft
 
 def fttom(ft):
@@ -196,7 +196,7 @@ def fttom(ft):
     # m: length [m]
     # note: 12 [in] = 1 [ft] and 1 [in] = 25.4 [mm] and 1000 [mm] = 1 [m]
     # Conversion: 
-    m = ft*(12*25.4/1000);
+    m = ft*(12*25.4/1000)
     return m
 
 def m3kgtoft3lb(m3kg):
@@ -205,11 +205,18 @@ def m3kgtoft3lb(m3kg):
     # m3kg: density [m]
     # note: 1m3/kg = 16.0185ft3/lb
     # Conversion: 
-    ft3lb = m3kg*(16.0185);
+    ft3lb = m3kg*(16.0185)
     return ft3lb
 
 
-
+def m3toGal(m3):
+    # Convertie les m3 en Gal
+    # Gal: Volume [Gal]
+    # m3: Volume [m3]
+    # note: 1m3 = 1000liters and 3.78541liters = 1Gal
+    # Conversion:
+    Gal = m3*1000/3.78541
+    return Gal
 
 
 

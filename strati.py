@@ -609,14 +609,14 @@ with st.beta_expander("Transient Results", expanded=True):
 # Analyse des Échelles de temps
 with st.beta_expander("Time Scale Analysis", expanded=True):
     st.markdown('### Volume')
-    st.markdown('Tank internal volume: **{0:.2f} [m3]**'.format(paramRes2.Vres))
-    st.markdown("Volume of the Coil Heat Exchanger in the tank: **{0:.4f} [m3]**".format(paramHXefd.Aext * paramHXefd.Ltot))
+    st.markdown('Tank internal volume: **{0:.0f} [Gal]**'.format(conversion.m3toGal(paramRes2.Vres)))
+    st.markdown("Volume of the Coil Heat Exchanger in the tank: **{0:.0f} [Gal]**".format(conversion.m3toGal(paramHXefd.Aext * paramHXefd.Ltot)))
     Volume_eau_EC = paramRes2.Vres - paramHXefd.Aext * paramHXefd.Ltot
-    st.markdown("Volume of Hot Water in the tank (HW): **{0:.2f} [m3]**".format(Volume_eau_EC))
+    st.markdown("Volume of Hot Water in the tank (HW): **{0:.0f} [Gal]**".format(conversion.m3toGal(Volume_eau_EC)))
     Volume_eau_EFD = paramHXefd.As * paramHXefd.Ltot
-    st.markdown("Volume of Water in the Coil Heat Exchanger: **{0:.4f} [m3]**".format(Volume_eau_EFD))
+    st.markdown("Volume of Water in the Coil Heat Exchanger: **{0:.0f} [Gal]**".format(conversion.m3toGal(Volume_eau_EFD)))
     Volume_cuivre = (paramHXefd.Aext - paramHXefd.As) * paramHXefd.Ltot
-    st.markdown("Volume of Copper in the Coil heat Exchanger **{0:.2f} [m3]**".format(Volume_cuivre))
+    st.markdown("Volume of Copper in the Coil heat Exchanger **{0:.0f} [Gal]**".format(conversion.m3toGal(Volume_cuivre)))
     st.markdown('### Thermal capacity')
     st.markdown("Total Thermal capacity of the water in the tank: **{0:.2f} [kJ/K]**".format(data.rho_EC * Volume_eau_EC * data.Cp_EC * 1e-3))
     st.markdown("Total Thermal capacity of the water in the coil heat exchanger @300K: **{0:.2f} [kJ/K]**".format(data.rho_EC * Volume_eau_EFD * data.Cp_EC * 1e-3))
