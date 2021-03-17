@@ -425,7 +425,8 @@ for m in range(1, nb_t, 1):
                                                   Res2results.Tk[
                                                       i, m]) / 2  # [K] On initilaise la température de surface avec la moyenne de la température moyenne entre l'entrée et la sortie et la température de l'eau dans le réservoir au noeud i
                 iterToutHX = 0
-                erreurTout = np.ones([50, 1])
+                limit_iter_ToutHX = 50
+                erreurTout = np.ones([limit_iter_ToutHX, 1])
                 # Recalcul des j températures de sortie de l'échangeur jusqu'à convergence pour le temps donné m
                 while erreurTout[iterToutHX] > data.critere:
 
@@ -512,7 +513,9 @@ for m in range(1, nb_t, 1):
                     # Calcul de l'erreur entre cette itération et l'itération précédente
                     iterToutHX = iterToutHX + 1
                     erreurTout[iterToutHX, 0] = np.sqrt((HXefdresults.Toutk[i, m] - Toutguess) ** 2)
-
+                    if iterToutHX >= limit_iter_ToutHX - 1:
+                        print('Heat Exchanger Outlet Temperature not converged - ResiduToutHX = {}'.format(erreurTout[iterToutHX, 0]))
+                    break
                 # On assigne la température calculée en sortie à la température d'entrée du prochain noeud, i-1
                 if i == paramHXefd.outlet:
                     break
@@ -543,7 +546,7 @@ for m in range(1, nb_t, 1):
         erreurTres2[iterTres2, 0] = np.sqrt(sum((Res2results.Tk[:, [m]] - Tguess) ** 2)) / paramRes2.nb_y
         print('\n CALCULATION COMPLETED - PAS DE TEMPS # {}/{} - ITERATION # {} \n'.format(m, nb_t, iterTres2))
 
-        if iterTres2 >= limit_iter_Tres2:
+        if iterTres2 >= limit_iter_Tres2-1:
             print('Temperature field not converged - ResiduTres2 = {}'.format(erreurTres2[iterTres2, 0]))
             break
     if mixing:
