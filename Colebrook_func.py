@@ -17,16 +17,16 @@ dpdz_friction: [Pa/m] Frictional Pressure drop
 '''
 import numpy as np
 import sys
+from scipy.optimize import bisect
 
 eps = sys.float_info.epsilon
-from scipy.optimize import bisect
 
 
 def Colebrook(Vz, D, rugosity_ratio, rhof, muf):
     ReD = np.multiply(rhof, Vz) * D / muf  # [-] Reynolds number
     f = np.zeros([np.size(ReD), 1])  # need to initialize that vector
 
-    f[ReD < 2300] = 64 / ReD[ReD < 2300];  # si l'écoulement est laminaire
+    f[ReD < 2300] = 64 / ReD[ReD < 2300]  # si l'écoulement est laminaire
 
     fun = lambda x, ReD: -1 / np.sqrt(x) - 2 * np.log10(
         (2.51 / (ReD * np.sqrt(x))) + (rugosity_ratio / 3.7))  # on utilise la corrélation de Colebrook
