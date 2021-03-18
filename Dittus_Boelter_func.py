@@ -21,16 +21,16 @@ k: [W/(m K)] Thermal conductivity
 '''
 def Dittus_Boelter(Vz,D,rho,mu,Pr,k,HeatTransfer):
 
-    ReD = rho*Vz*D/mu;   # [-] Reynolds number
+    ReD = rho*Vz*D/mu  # [-] Reynolds number
 
     if HeatTransfer == 'Heating':
-        n = 0.4;
+        n = 0.4
     else: # HeatTransfer == 'Cooling'
-        n = 0.3;
+        n = 0.3
 
-    NuD = 0.023*ReD**(4/5)*Pr**n; # [-] Nusselt number
+    NuD = 0.023*ReD**(4/5)*Pr**n # [-] Nusselt number
 
-    hconv_in = NuD*k/D;    # [W/m^2] Convection heat transfer coefficient
+    hconv_in = NuD*k/D    # [W/m^2] Convection heat transfer coefficient
     return hconv_in
 
 

@@ -16,10 +16,7 @@ import properties_mod as properties
 from TDMA_func import TDMA
 from Churchill_Chu_plate_func import Churchill_Chu_plate
 from Churchill_Chu_func import Churchill_Chu
-from Colebrook_func import Colebrook
-from Dittus_Boelter_func import Dittus_Boelter
 from Dittus_Boelter_mod_func import Dittus_Boelter_mod
-from matplotlib import pyplot as plt
 import streamlit as st
 from matplotlib import pyplot as plt
 import UnitConversionModule as conversion

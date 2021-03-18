@@ -16,22 +16,22 @@ Prf: [-] Prandtl number
 hconv : [W/m^2] Convection heat transfer coefficient
 '''
 import numpy as np
-def Dittus_Boelter_mod(Di,DHX,pitch,m_in,Cp,kf,muf,Prf):
 
-    ReHX = 4*m_in/(np.pi*Di*muf);
-    PrHX= Cp*muf/kf;
-    Recrit = 20000*(Di/DHX)**0.32;
+
+def Dittus_Boelter_mod(Di, DHX, pitch, m_in, Cp, kf, muf, Prf):
+    ReHX = 4 * m_in / (np.pi * Di * muf)
+    PrHX = Cp * muf / kf
+    Recrit = 20000 * (Di / DHX) ** 0.32
 
     # Cas laminaire
     if ReHX < Recrit:
-        HE = ReHX*(Di/DHX)**0.5/(1+(pitch/(np.pi*Di))**2);
-        NuHX = ((48/11+(51/11)/(1+1342/PrHX/HE**2))**3+1.816*(HE/(1+1.15/PrHX))**1.5)**(1/3);
+        HE = ReHX * (Di / DHX) ** 0.5 / (1 + (pitch / (np.pi * Di)) ** 2)
+        NuHX = ((48 / 11 + (51 / 11) / (1 + 1342 / PrHX / HE ** 2)) ** 3 + 1.816 * (HE / (1 + 1.15 / PrHX)) ** 1.5) ** (
+                    1 / 3)
     # Cas turbulent
     else:
-        NuHX = 0.023*ReHX**0.85*PrHX**0.4*(Di/DHX)**0.1;
+        NuHX = 0.023 * ReHX ** 0.85 * PrHX ** 0.4 * (Di / DHX) ** 0.1
 
-    hconv_in = NuHX*kf/Di;    # [W/m^2] Convection heat transfer coefficient
+    hconv_in = NuHX * kf / Di  # [W/m^2] Convection heat transfer coefficient
 
     return hconv_in
-
-

@@ -27,28 +27,26 @@ X le vecteur solution
 # Library
 import numpy as np
 
-def TDMA(A,B,C,D):
-    
-    #==========================================================================
-    n = D.size-1; # nombre d'inconues (ou de lignes)
+
+def TDMA(A, B, C, D):
+    n = D.size - 1  # nombre d'inconues (ou de lignes)
     # Attention a la longueur des vecteurs A et B si A, B, C, D sont de la meme longueur commente les ligne 30 et 31!
-    B = np.insert(B,0,0);
-    A = np.append(A,0);
-    X = np.zeros([n+1,1]); # initialisation du vecteur solution
-    
+    B = np.insert(B, 0, 0)
+    A = np.append(A, 0)
+    X = np.zeros([n + 1, 1])  # initialisation du vecteur solution
+
     # Obtention d'une matrice bidiagonale superieure
-    for i in np.arange(0,n+1,1):
-        D[i] = D[i]-(B[i]*A[i-1])/D[i-1]; # On remplace les coefficents sur la diagonale principale
-        C[i] = C[i]-(C[i-1]*B[i])/D[i-1]; # On remplace les termes dans le membre de droite 
-    
+    for i in np.arange(0, n + 1, 1):
+        D[i] = D[i] - (B[i] * A[i - 1]) / D[i - 1]  # On remplace les coefficents sur la diagonale principale
+        C[i] = C[i] - (C[i - 1] * B[i]) / D[i - 1]  # On remplace les termes dans le membre de droite
+
     # resolution du dernier element du vecteur solution
-    X[n] = C[n]/D[n];
-    
+    X[n] = C[n] / D[n]
+
     # Resolution de tous les autres elements du vecteur solution en travaillant
     # a reculons vers le haut
-    
-    for i in np.arange(n-1,-1,-1):
-        X[i] = (C[i]-A[i]*X[i+1])/D[i];
-        
-    return X
 
+    for i in np.arange(n - 1, -1, -1):
+        X[i] = (C[i] - A[i] * X[i + 1]) / D[i]
+
+    return X
