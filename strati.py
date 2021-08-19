@@ -139,7 +139,7 @@ paramRes2.y_num = np.arange(paramRes2.dy / 2, paramRes2.yi,
 
 # Res2 - Flow parameters
 st.sidebar.markdown('Flow parameters')
-paramRes2.m_in = st.sidebar.number_input("HW flow, [gpm]", 0., 25., 2.5, 0.5)/60*3.78541/1000*data.rho_EC  # [kg/s] Débit de la pompe -->60sec/hr | 3.78541liters/gal | 1000liters/m3
+paramRes2.m_in = st.sidebar.number_input("HW flow, [gpm]", 0., 50., 2.5, 0.5)/60*3.78541/1000*data.rho_EC  # [kg/s] Débit de la pompe -->60sec/hr | 3.78541liters/gal | 1000liters/m3
 paramRes2.intlet_EC = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas du réservoir)
 paramRes2.outlet_EC = 0  # [-] Numéro du noeud sortie (0 --> haut du reservoir)
 paramRes2.Ti = conversion.FtoC(st.sidebar.number_input("initial tank temperature, [°F]", 40, 160, 140, 10))  # [°C] Température initiale du réservoir 2
