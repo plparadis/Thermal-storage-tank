@@ -151,10 +151,10 @@ paramRes2.Tink_EC = paramRes2.Tin_EC + 273.15  # [K] Conversion
 st.sidebar.markdown('** &#10114 Heat Exchanger **', unsafe_allow_html=False)
 # HX EFD - Geometry
 st.sidebar.markdown('Geometry')
-paramHXefd.Do = st.sidebar.number_input("Coil pipe outside diameter, [in]", 0., 2., 0.75, 0.25) * 0.0254  # [m] Diamètre extérieur du tuyau (3/4 pouces)
+paramHXefd.Do = st.sidebar.number_input("Coil pipe outside diameter, [in]", 0., 3., 0.75, 0.25) * 0.0254  # [m] Diamètre extérieur du tuyau (3/4 pouces)
 paramHXefd.t_pipe = st.sidebar.number_input("Coil pipe wall thickness, [in]", 0., 0.125, 0.0486, 0.0001) * 0.0254  # [m] épaisseur de la paroi du tuyau
 paramHXefd.Di = paramHXefd.Do - 2 * paramHXefd.t_pipe  # [m] diamètre intérieur du tuyau
-paramHXefd.Ltot = st.sidebar.number_input("Total length of the coiled pipe, [in]", 0, 1200, 496, 6) * .0254  # [m] Longueur du tuyau
+paramHXefd.Ltot = st.sidebar.number_input("Total length of the coiled pipe, [in]", 0, 2500, 496, 6) * .0254  # [m] Longueur du tuyau
 paramHXefd.As = np.pi * paramHXefd.Di ** 2 / 4  # [m^2] Aire de la section interne de la conduite
 paramHXefd.Aext = np.pi * paramHXefd.Do ** 2 / 4  # [m^2] Aire de la section externe de la conduite
 paramHXefd.D = st.sidebar.number_input("Coil internal diameter, [in]", 0, 60, 20, 2) * 0.0254  # [m] Diamètre de la spirale de l'échangeur
