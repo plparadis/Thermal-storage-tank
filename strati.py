@@ -33,12 +33,12 @@ st.set_page_config(page_title="Thermal Storage Tank",
                    layout="centered",
                    initial_sidebar_state="auto")
 
-col1, col2 = st.beta_columns((3, 1))
+col1, col2 = st.columns((3, 1))
 col1.title("Thermal Storage Tank")
 with col2:
     col2.image("static/logo.png", use_column_width=True, output_format='PNG')
 
-with st.beta_expander("Tool description", expanded=True):
+with st.expander("Tool description", expanded=True):
     st.markdown("A simple simulation tool to simulate stratified thermal storage tank as seen below.")
     st.image("static/Schematic.JPG", use_column_width=True, output_format='JPG')
 
@@ -101,8 +101,8 @@ data.critere = 1e-6  # [-] Critère de convergence
 
 # Parametres de la resolution temporelle
 st.sidebar.markdown('** &#10112 Transient solution parameter **', unsafe_allow_html=False)
-nb_t = st.sidebar.number_input("Number of time steps", 1, 60, 10)  # [-] Nombre de pas de temps
-dt = st.sidebar.number_input("Time step, [s]", 300, 3600, 900,
+nb_t = st.sidebar.number_input("Number of time steps", 1, 3600, 10)  # [-] Nombre de pas de temps
+dt = st.sidebar.number_input("Time step, [s]", 15, 3600, 900,
                              300)  # [s] Pas de temps ( 300 [s] --> 5 [min], 900 [s] --> 15 [min])
 temps = np.arange(start=0, stop=nb_t * dt, step=dt).transpose()  # [s] Vecteur des pas de temps
 
@@ -565,7 +565,7 @@ Res2results.T = Res2results.Tk - 273.15
 
 
 # Affichage des conditions d'opération
-with st.beta_expander("Operating Conditions", expanded=True):
+with st.expander("Operating Conditions", expanded=True):
     st.markdown('Temperature in the mechanical room: **{:,.0f}°F**.'.format(conversion.CtoF(data.Tairk - 273.15)))
     st.markdown('Initial tank temperature: **{:,.0f}°F**.'.format(conversion.CtoF(paramRes2.Ti)))
     st.markdown('Temperature of Hot Water Return (HWR): **{:,.0f}°F**.'.format(conversion.CtoF(paramRes2.Tin_EC)))
@@ -574,7 +574,7 @@ with st.beta_expander("Operating Conditions", expanded=True):
     st.markdown('Coil Heat exchanger flow: **{0:.2f} gpm**.'.format(paramHXefd.m_in*60/3.78541*1000/data.rho_EC))
 
 #  Impression des figures
-with st.beta_expander("Transient Results", expanded=True):
+with st.expander("Transient Results", expanded=True):
     fig1, (ax1, ax11) = plt.subplots(2, 1, num='Montly Loads')
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, nb_t - 1])), label='$\itt$={0:.2f} h'.format(temps[nb_t - 1] / 3600))
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 2)])),
@@ -607,7 +607,7 @@ with st.beta_expander("Transient Results", expanded=True):
     st.pyplot(fig1)
 
 # Analyse des Échelles de temps
-with st.beta_expander("Time Scale Analysis", expanded=True):
+with st.expander("Time Scale Analysis", expanded=True):
     st.markdown('### Volume')
     st.markdown('Tank internal volume: **{0:.0f} [Gal]**'.format(conversion.m3toGal(paramRes2.Vres)))
     st.markdown("Volume of the Coil Heat Exchanger in the tank: **{0:.0f} [Gal]**".format(conversion.m3toGal(paramHXefd.Aext * paramHXefd.Ltot)))
