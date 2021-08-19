@@ -142,10 +142,11 @@ paramRes2.y_num = np.arange(paramRes2.dy / 2, paramRes2.yi,
 st.sidebar.markdown('Flow parameters')
 paramRes2.m_in = st.sidebar.number_input("HW flow, [gpm]", 0., 50., 2.5, 0.5)/60*3.78541/1000*data.rho_EC  # [kg/s] Débit de la pompe -->60sec/hr | 3.78541liters/gal | 1000liters/m3
 if reverse_flow_EC:
-    paramRes2.m_in = -paramRes2.m_in
-
-paramRes2.intlet_EC = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas du réservoir)
-paramRes2.outlet_EC = 0  # [-] Numéro du noeud sortie (0 --> haut du reservoir)
+    paramRes2.intlet_EC = 0  # [-] Numéro du noeud entrée (0 --> haut du reservoir)
+    paramRes2.outlet_EC = paramRes2.nb_y  # [-] Numéro du noeud sortie (nb_y --> bas du réservoir)
+else:
+    paramRes2.intlet_EC = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas du réservoir)
+    paramRes2.outlet_EC = 0  # [-] Numéro du noeud sortie (0 --> haut du reservoir)
 paramRes2.Ti = conversion.FtoC(st.sidebar.number_input("initial tank temperature, [°F]", 40, 160, 140, 10))  # [°C] Température initiale du réservoir 2
 paramRes2.Tik = paramRes2.Ti + 273.15  # [K] Conversion
 paramRes2.Tin_EC = conversion.FtoC(st.sidebar.number_input("HWR temperature, [°F]",60, 160, 120, 10))  # [°C] Température de retour du réseau de chauffage (Température d'entrée EC)
@@ -222,7 +223,7 @@ h_convair = np.zeros([paramRes2.nb_y + 2, 1])  # [W/(m^2) K] Convection heat tra
 Rpp_pertestopbott = np.ones([paramRes2.nb_y, 1])  # [K (m^2)/W] Résistance thermique résultante pour les extrémitées
 qpp_pertes = np.zeros([paramRes2.nb_y + 2, 1])  # [W/m^2] Flux de chaleur total des pertes thermiques du réservoir
 
-# Initialisation des temp�ratures de surfaces des parois du réservoir
+# Initialisation des températures de surfaces des parois du réservoir
 Tsk_in = np.zeros([paramRes2.nb_y + 2, 1]) + paramRes2.Tik - 4  # [K] Surface interne
 Tsk_out = np.zeros([paramRes2.nb_y + 2, 1]) + data.Tairk - 4  # [K] Surface externe
 
