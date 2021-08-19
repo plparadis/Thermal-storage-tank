@@ -73,6 +73,7 @@ data.theta = -np.pi / 2  # [radians] Inclinaison de la conduite par rapport à l
 data.g = 9.81  # [m/s2] Gravitational acceleration
 data.rugosity_ratio = 1e-6  # [-] Rugosite relative des conduites (1e-6 --> conduites lisses)
 mixing = st.sidebar.checkbox("Handle Temperature inversion",value=False)  # Active/désactive l'Algorithme de mixing
+reverse_flow_EC = st.sidebar.checkbox("Reverse flow in tank",value=False)  # reverse flow EC
 
 data.kss = 14.9  # [W/(m K)] Thermal conductivity of stainless steel at 300[K]
 data.rho_ss = 7900  # [kg/m3] Density of stainless steel at 300[K]
@@ -140,6 +141,9 @@ paramRes2.y_num = np.arange(paramRes2.dy / 2, paramRes2.yi,
 # Res2 - Flow parameters
 st.sidebar.markdown('Flow parameters')
 paramRes2.m_in = st.sidebar.number_input("HW flow, [gpm]", 0., 50., 2.5, 0.5)/60*3.78541/1000*data.rho_EC  # [kg/s] Débit de la pompe -->60sec/hr | 3.78541liters/gal | 1000liters/m3
+if reverse_flow_EC:
+    paramRes2.m_in = -paramRes2.m_in
+
 paramRes2.intlet_EC = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas du réservoir)
 paramRes2.outlet_EC = 0  # [-] Numéro du noeud sortie (0 --> haut du reservoir)
 paramRes2.Ti = conversion.FtoC(st.sidebar.number_input("initial tank temperature, [°F]", 40, 160, 140, 10))  # [°C] Température initiale du réservoir 2
