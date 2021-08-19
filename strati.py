@@ -610,7 +610,7 @@ with st.expander("Transient Results", expanded=True):
 with st.expander("Time Scale Analysis", expanded=True):
     st.markdown('### Volume')
     st.markdown('Tank internal volume: **{0:.0f} [Gal]**'.format(conversion.m3toGal(paramRes2.Vres)))
-    st.markdown("Heat exchange area of Coil heat Exchanger **{0:.2f} [ft^2]**".format(conversion.m2toft2(np.pi * paramHXefd.Do * * paramHXefd.Ltot)))
+    st.markdown("Heat exchange area of Coil heat Exchanger **{0:.2f} [ft^2]**".format(conversion.m2toft2(np.pi * paramHXefd.Do * paramHXefd.Ltot)))
     st.markdown("Volume of the Coil Heat Exchanger in the tank: **{0:.0f} [Gal]**".format(conversion.m3toGal(paramHXefd.Aext * paramHXefd.Ltot)))
     Volume_eau_EC = paramRes2.Vres - paramHXefd.Aext * paramHXefd.Ltot
     st.markdown("Volume of Hot Water in the tank (HW): **{0:.0f} [Gal]**".format(conversion.m3toGal(Volume_eau_EC)))
