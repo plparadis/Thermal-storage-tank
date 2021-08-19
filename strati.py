@@ -147,6 +147,7 @@ if reverse_flow_EC:
 else:
     paramRes2.intlet_EC = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas du réservoir)
     paramRes2.outlet_EC = 0  # [-] Numéro du noeud sortie (0 --> haut du reservoir)
+
 paramRes2.Ti = conversion.FtoC(st.sidebar.number_input("initial tank temperature, [°F]", 40, 160, 140, 10))  # [°C] Température initiale du réservoir 2
 paramRes2.Tik = paramRes2.Ti + 273.15  # [K] Conversion
 paramRes2.Tin_EC = conversion.FtoC(st.sidebar.number_input("HWR temperature, [°F]",60, 160, 120, 10))  # [°C] Température de retour du réseau de chauffage (Température d'entrée EC)
@@ -295,7 +296,7 @@ for m in range(1, nb_t, 1):
     limit_iter_Tres2 = 25
     erreurTres2 = np.ones([limit_iter_Tres2, 1])
     Res2results.Tk[:, [m]] = Res2results.Tk[:, [
-                                                   m - 1]]  # Initilaisation de la solution du pas de temps courant à partir de la solution du pas de temps précédent
+                                                   m - 1]]  # Initialisation de la solution du pas de temps courant à partir de la solution du pas de temps précédent
 
     # Recalcul des j températures du réservoir de stockage jusqu'à convergence pour le pas de temps courant, m
     while erreurTres2[iterTres2] > data.critere:
@@ -526,7 +527,10 @@ for m in range(1, nb_t, 1):
 
         # Calcul des coefficients de la matrice D
         d1 = propriFluid_EC.rho_inf[1:-1] * propriFluid_EC.Cp_inf[1:-1] * paramRes2.dV / dt
-        d3 = paramRes2.m_in * propriFluid_EC.Cp_inf[1:-1]
+        if reverse_flow_EC:
+            d3 = -paramRes2.m_in * propriFluid_EC.Cp_inf[1:-1]
+        else:
+            d3 = paramRes2.m_in * propriFluid_EC.Cp_inf[1:-1]
         d4 = np.pi * paramRes2.Di * paramRes2.dy / Rpp_pertesside
         d5 = paramRes2.As / Rpp_pertestopbott
 
