@@ -604,7 +604,7 @@ with st.expander("Operating Conditions", expanded=True):
 
 #  Impression des figures
 with st.expander("Transient Results", expanded=True):
-    fig1, (ax1, ax11) = plt.subplots(2, 1, num='Montly Loads')
+    fig1, (ax1, ax11) = plt.subplots(2, 1, num='results')
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, nb_t - 1])), label='$\itt$={0:.2f} h'.format(temps[nb_t - 1] / 3600))
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 2)])),
              label='$\itt$={0:.2f} h'.format(temps[round(nb_t / 2)] / 3600))
@@ -635,6 +635,13 @@ with st.expander("Transient Results", expanded=True):
     #fig1.savefig('Tank Simulation results.jpg', format='JPG', dpi=300)
     st.write(fig1)
 
+with st.expander("Tank solution", expanded=False):
+    st.write(conversion.CtoF(Res2results.T))
+with st.expander("Coil HX solution", expanded=False):
+    st.markdown("*T<sub>out</sub>*", unsafe_allow_html=True)
+    st.write(conversion.CtoF(HXefdresults.Tout))
+    st.markdown("*T<sub>in</sub>*", unsafe_allow_html=True)
+    st.write(conversion.CtoF(HXefdresults.Tin))
 # Analyse des Échelles de temps
 with st.expander("Time Scale Analysis", expanded=True):
     st.markdown('### Volume')
