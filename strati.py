@@ -229,10 +229,8 @@ Tsk_in = np.zeros([paramRes2.nb_y + 2, 1]) + paramRes2.Tik - 4  # [K] Surface in
 Tsk_out = np.zeros([paramRes2.nb_y + 2, 1]) + data.Tairk - 4  # [K] Surface externe
 
 # Initialisation des vecteurs pour le calcul de l'échangeur EFD
-h_convHXefd_in = np.zeros(
-    [paramRes2.nb_y, 1])  # [W/(m^2) K] Convection heat transfer coefficient inside échangeur EFD (convection forcée)
-h_convHXefd_out = np.zeros([paramRes2.nb_y,
-                            1])  # [W/(m^2) K] Convection heat transfer coefficient outside échangeur EFD (convection naturelle)
+h_convHXefd_in = np.zeros([paramRes2.nb_y, 1])  # [W/(m^2) K] Convection heat transfer coefficient inside échangeur EFD (convection forcée)
+h_convHXefd_out = np.zeros([paramRes2.nb_y, 1])  # [W/(m^2) K] Convection heat transfer coefficient outside échangeur EFD (convection naturelle)
 TmoyEFD = np.zeros([paramRes2.nb_y, 1])  # [K] Température moyenne entre l'entrée et la sortie (échangeur EFD)
 deltaTi = np.zeros([paramRes2.nb_y, 1])  # [K] Pincement à l'entrée de l'échangeur EFD
 deltaTo = np.zeros([paramRes2.nb_y, 1])  # [K] Pincement à la sortie de l'échangeur EFD
@@ -253,10 +251,8 @@ Rpp_condiso = paramRes2.t_iso / data.kiso  # [K m^2/W] Calcul de la résistance 
 R_condHXecd_wall = np.log(paramHXefd.Do / paramHXefd.Di) / (
         2 * np.pi * data.kcu * paramHXefd.L)  # [K/W] Calcul de la résistance thermique totale au travers de la paroi de l'échangeur EFD
 
-d2 = paramRes2.As * (
-        data.kss + paramRes2.deltak) / paramRes2.dy  # Terme constant de la diagonale D (Matrice des coefficients)
-B = np.ones([paramRes2.nb_y - 1, 1]) * (
-    -d2)  # Vecteur de la diagonale inférieure B de longueur (Nb_y-1) (Matrice des coefficients)
+d2 = paramRes2.As * (data.kss + paramRes2.deltak) / paramRes2.dy  # Terme constant de la diagonale D (Matrice des coefficients)
+B = np.ones([paramRes2.nb_y - 1, 1]) * (-d2)  # Vecteur de la diagonale inférieure B de longueur (Nb_y-1) (Matrice des coefficients)
 
 # Initalisation des propri
 propriFluid_EC.rho_inf = np.zeros([paramRes2.nb_y + 2, 1])
@@ -296,7 +292,7 @@ for m in range(1, nb_t, 1):
     limit_iter_Tres2 = 25
     erreurTres2 = np.ones([limit_iter_Tres2, 1])
     Res2results.Tk[:, [m]] = Res2results.Tk[:, [
-                                                   m - 1]]  # Initialisation de la solution du pas de temps courant à partir de la solution du pas de temps précédent
+                                                   m - 1]]  # Initilaisation de la solution du pas de temps courant à partir de la solution du pas de temps précédent
 
     # Recalcul des j températures du réservoir de stockage jusqu'à convergence pour le pas de temps courant, m
     while erreurTres2[iterTres2] > data.critere:
@@ -527,10 +523,7 @@ for m in range(1, nb_t, 1):
 
         # Calcul des coefficients de la matrice D
         d1 = propriFluid_EC.rho_inf[1:-1] * propriFluid_EC.Cp_inf[1:-1] * paramRes2.dV / dt
-        if reverse_flow_EC:
-            d3 = -paramRes2.m_in * propriFluid_EC.Cp_inf[1:-1]
-        else:
-            d3 = paramRes2.m_in * propriFluid_EC.Cp_inf[1:-1]
+        d3 = paramRes2.m_in * propriFluid_EC.Cp_inf[1:-1]
         d4 = np.pi * paramRes2.Di * paramRes2.dy / Rpp_pertesside
         d5 = paramRes2.As / Rpp_pertestopbott
 
