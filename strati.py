@@ -72,7 +72,8 @@ propriHXefd_in = MatlabStruct()
 data.theta = -np.pi / 2  # [radians] Inclinaison de la conduite par rapport à la verticale (-pi/2 --> horizontal, 0 --> vertical)
 data.g = 9.81  # [m/s2] Gravitational acceleration
 data.rugosity_ratio = 1e-6  # [-] Rugosite relative des conduites (1e-6 --> conduites lisses)
-mixing = st.sidebar.checkbox("Handle Temperature inversion",value=False)  # Active/désactive l'Algorithme de mixing
+mixing = st.sidebar.checkbox("Handle Temperature inversion", value=False)  # Active/désactive l'Algorithme de mixing
+reverse_flow = st.sidebar.checkbox("Reverse flow in Tank", value=True)  # reverse flow in tank
 
 data.kss = 14.9  # [W/(m K)] Thermal conductivity of stainless steel at 300[K]
 data.rho_ss = 7900  # [kg/m3] Density of stainless steel at 300[K]
@@ -132,16 +133,21 @@ paramRes2.t_iso = st.sidebar.number_input("Tank insulation thickness, [in]", 0.2
 
 # Res2 - Discretization
 st.sidebar.markdown('Discretization')
-paramRes2.nb_y = st.sidebar.number_input("Number of vertical Tank nodes", 1, 15, 5, 1)  # [noeuds] Nombre de noeuds du reservoir de stockage (arbritraire)
+paramRes2.nb_y = st.sidebar.number_input("Number of vertical Tank nodes", 1, 25, 10, 1)  # [noeuds] Nombre de noeuds du reservoir de stockage (arbritraire)
 paramRes2.dy = paramRes2.yi / paramRes2.nb_y  # [m] Distance entre les noeuds (selon l'axe y)
 paramRes2.y_num = np.arange(paramRes2.dy / 2, paramRes2.yi,
                             paramRes2.dy)  # [m] Vecteur de position de chacun des noeuds
 
 # Res2 - Flow parameters
 st.sidebar.markdown('Flow parameters')
+
 paramRes2.m_in = st.sidebar.number_input("HW flow, [gpm]", 0., 50., 2.5, 0.5)/60*3.78541/1000*data.rho_EC  # [kg/s] Débit de la pompe -->60sec/hr | 3.78541liters/gal | 1000liters/m3
-paramRes2.intlet_EC = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas du réservoir)
-paramRes2.outlet_EC = 0  # [-] Numéro du noeud sortie (0 --> haut du reservoir)
+if reverse_flow:
+    paramRes2.inlet_EC = 1  # [-] Numéro du noeud entrée (1 --> haut du reservoir)
+    paramRes2.outlet_EC = paramRes2.nb_y  # [-] Numéro du noeud sortie (nb_y --> bas du réservoir)
+else:
+    paramRes2.inlet_EC = paramRes2.nb_y  # [-] Numéro du noeud entrée (nb_y --> bas du réservoir)
+    paramRes2.outlet_EC = 1  # [-] Numéro du noeud sortie (1 --> haut du reservoir)
 
 paramRes2.Ti = conversion.FtoC(st.sidebar.number_input("initial tank temperature, [°F]", 40, 160, 140, 10))  # [°C] Température initiale du réservoir 2
 paramRes2.Tik = paramRes2.Ti + 273.15  # [K] Conversion
@@ -179,7 +185,7 @@ paramRes2.Veau = paramRes2.Vres - (
         paramHXefd.Aext * paramHXefd.Ltot)  # [m^3] Volume d'eau dans le réservoir --> Calcul Volume EC = (Volume interne du r�servoir - Volume des �changeurs de chaleurs)
 paramRes2.dV = paramRes2.Veau / paramRes2.nb_y  # [m^3] Volume d'un noeud du réservoir de stockage
 paramRes2.deltak = data.kss * (
-        np.pi * paramRes2.De ** 2 / 4 - paramRes2.As) / paramRes2.As  # De-stratification due au transfert de chaleur par conduction axiale dans la paroi du r�servoir
+        np.pi * paramRes2.De ** 2 / 4 - paramRes2.As) / paramRes2.As  # De-stratification due au transfert de chaleur par conduction axiale dans la paroi du réservoir
 
 # Bilan d'énergie sur volume de contrôle j du réservoir
 
@@ -189,13 +195,24 @@ M_topbott[0] = 1  # Identification du noeud du haut (Condition aux frontières)
 M_topbott[-1] = 1  # Identification du noeud du bas (Condition aux frontières)
 
 M_debit_D = np.zeros([paramRes2.nb_y, 1])
-M_debit_D[paramRes2.outlet_EC:paramRes2.intlet_EC] = 1  # Identification des noeuds de débit EC pour la diagonale D (Matrice des coefficients)
+if reverse_flow:
+    M_debit_D[
+    paramRes2.inlet_EC - 1:paramRes2.outlet_EC] = 1  # Identification des noeuds de débit EC pour la diagonale D (Matrice des coefficients)
+else:
+    M_debit_D[
+    paramRes2.outlet_EC - 1:paramRes2.inlet_EC] = 1  # Identification des noeuds de débit EC pour la diagonale D (Matrice des coefficients)
 
 M_debit_A = np.zeros([paramRes2.nb_y - 1, 1])
-M_debit_A[paramRes2.outlet_EC:paramRes2.intlet_EC - 1] = 1  # Identification des noeuds de débit EC pour la diagonale A (Matrice des coefficients)
+if reverse_flow:
+    M_debit_A[paramRes2.inlet_EC - 1:(
+                paramRes2.outlet_EC - 1)] = 1  # Identification des noeuds de débit EC pour la diagonale A (Matrice des coefficients)
+else:
+    M_debit_A[paramRes2.outlet_EC - 1:(
+                paramRes2.inlet_EC - 1)] = 1  # Identification des noeuds de débit EC pour la diagonale A (Matrice des coefficients)
+
 
 M_debit_C = np.zeros([paramRes2.nb_y, 1])
-M_debit_C[paramRes2.intlet_EC - 1] = 1  # Identification des noeuds de débit EC pour la diagonale C (Matrice des coefficients)
+M_debit_C[paramRes2.inlet_EC - 1] = 1  # Identification des noeuds de débit EC pour la diagonale C (Matrice des coefficients)
 
 M_HXefd = np.zeros([paramRes2.nb_y, 1])
 M_HXefd[paramHXefd.outlet:paramHXefd.intlet] = 1  # Localisation de l'échangeur EFD
@@ -246,8 +263,6 @@ Rpp_condiso = paramRes2.t_iso / data.kiso  # [K m^2/W] Calcul de la résistance 
 R_condHXecd_wall = np.log(paramHXefd.Do / paramHXefd.Di) / (
         2 * np.pi * data.kcu * paramHXefd.L)  # [K/W] Calcul de la résistance thermique totale au travers de la paroi de l'échangeur EFD
 
-d2 = paramRes2.As * (data.kss + paramRes2.deltak) / paramRes2.dy  # Terme constant de la diagonale D (Matrice des coefficients)
-B = np.ones([paramRes2.nb_y - 1, 1]) * (-d2)  # Vecteur de la diagonale inférieure B de longueur (Nb_y-1) (Matrice des coefficients)
 
 # Initalisation des propri
 propriFluid_EC.rho_inf = np.zeros([paramRes2.nb_y + 2, 1])
@@ -518,17 +533,34 @@ for m in range(1, nb_t, 1):
 
         # Calcul des coefficients de la matrice D
         d1 = propriFluid_EC.rho_inf[1:-1] * propriFluid_EC.Cp_inf[1:-1] * paramRes2.dV / dt
+        d2 = paramRes2.As * (
+                    data.kss + paramRes2.deltak) / paramRes2.dy  # Terme constant de la diagonale D (Matrice des coefficients)
         d3 = paramRes2.m_in * propriFluid_EC.Cp_inf[1:-1]
         d4 = np.pi * paramRes2.Di * paramRes2.dy / Rpp_pertesside
         d5 = paramRes2.As / Rpp_pertestopbott
 
+
         # CALCUL DU CHAMPS DE TEMPÉRATURE EC, ALGORITHME TDMA
-        A = np.ones([paramRes2.nb_y - 1, 1]) * (
-                -d2 - d3[0:-1] * M_debit_A)  # Vecteur de la diagonale supérieure de longueur N-1
-        D = np.ones([paramRes2.nb_y, 1]) * (d1 + d2 * (
-                2 - M_topbott) + d3 * M_debit_D + d4 + d5 * M_topbott)  # Vecteur de la diagonale centrale de longueur N
-        C1 = np.ones([paramRes2.nb_y, 1]) * (
-                d3 * M_debit_C * paramRes2.Tink_EC + d4 * data.Tairk + d5 * M_topbott * data.Tairk - q_EFD)  # Vecteur des constantes C (indépendante du temps m)
+        if reverse_flow:
+            A = np.ones([paramRes2.nb_y - 1, 1]) * (
+                    -d2)  # Vecteur de la diagonale supérieure de longueur N-1
+            B = np.ones([paramRes2.nb_y - 1, 1]) * (
+                -d2 - d3[0:-1] * M_debit_A)  # Vecteur de la diagonale inférieure B de longueur (Nb_y-1) (Matrice des coefficients)
+            D = np.ones([paramRes2.nb_y, 1]) * (d1 + d2 * (
+                    2 - M_topbott) + d3 * M_debit_D + d4 + d5 * M_topbott)  # Vecteur de la diagonale centrale de longueur N
+            C1 = np.ones([paramRes2.nb_y, 1]) * (
+                    d3 * M_debit_C * paramRes2.Tink_EC + d4 * data.Tairk + d5 * M_topbott * data.Tairk - q_EFD)
+
+        else:
+            A = np.ones([paramRes2.nb_y - 1, 1]) * (
+                    -d2 - d3[0:-1] * M_debit_A)  # Vecteur de la diagonale supérieure de longueur N-1
+            B = np.ones([paramRes2.nb_y - 1, 1]) * (
+                -d2)  # Vecteur de la diagonale inférieure B de longueur (Nb_y-1) (Matrice des coefficients)
+            D = np.ones([paramRes2.nb_y, 1]) * (d1 + d2 * (
+                    2 - M_topbott) + d3 * M_debit_D + d4 + d5 * M_topbott)  # Vecteur de la diagonale centrale de longueur N
+            C1 = np.ones([paramRes2.nb_y, 1]) * (
+                    d3 * M_debit_C * paramRes2.Tink_EC + d4 * data.Tairk + d5 * M_topbott * data.Tairk - q_EFD)
+
         C = np.ones([paramRes2.nb_y, 1]) * (
                 d1 * Res2results.Tk[:, [m - 1]]) + C1  # Vecteur des constantes C (dépendante du temps m)
 
@@ -601,7 +633,7 @@ with st.expander("Transient Results", expanded=True):
     fig1.set_figwidth(fig1.get_figwidth())
     fig1.tight_layout()  # otherwise the right y-label is slightly clipped
     #fig1.savefig('Tank Simulation results.jpg', format='JPG', dpi=300)
-    st.pyplot(fig1)
+    st.write(fig1)
 
 # Analyse des Échelles de temps
 with st.expander("Time Scale Analysis", expanded=True):
