@@ -26,7 +26,7 @@ plt.rcParams['text.color'] = TextColor
 plt.rcParams['axes.labelcolor'] = TextColor
 plt.rcParams['xtick.color'] = TextColor
 plt.rcParams['ytick.color'] = TextColor
-fontname = 'Helvetica LT Std'
+
 
 st.set_page_config(page_title="Thermal Storage Tank",
                    page_icon="static/favicon.ico",
@@ -36,11 +36,11 @@ st.set_page_config(page_title="Thermal Storage Tank",
 col1, col2 = st.columns((3, 1))
 col1.title("Thermal Storage Tank")
 with col2:
-    col2.image("static/logo.png", use_column_width=True, output_format='PNG')
+    col2.image("static/logo.png", output_format='PNG')
 
 with st.expander("Tool description", expanded=True):
     st.markdown("A simple simulation tool to simulate stratified thermal storage tank as seen below.")
-    st.image("static/Schematic.JPG", use_column_width=True, output_format='JPG')
+    st.image("static/Schematic.JPG", output_format='JPG')
 
     st.markdown("A heat balance on a slice of the tank gives")
     st.write(r'''
@@ -69,6 +69,7 @@ propriHXefd_out = MatlabStruct()
 propriHXefd_in = MatlabStruct()
 
 # General data and parameters
+st.sidebar.markdown('**1) General parameters**', unsafe_allow_html=False)
 data.theta = -np.pi / 2  # [radians] Inclinaison de la conduite par rapport à la verticale (-pi/2 --> horizontal, 0 --> vertical)
 data.g = 9.81  # [m/s2] Gravitational acceleration
 data.rugosity_ratio = 1e-6  # [-] Rugosite relative des conduites (1e-6 --> conduites lisses)
@@ -101,7 +102,7 @@ data.Tairk = conversion.FtoC(st.sidebar.number_input("Mechanical room Temp. [°F
 data.critere = 1e-6  # [-] Critère de convergence
 
 # Parametres de la resolution temporelle
-st.sidebar.markdown('** &#10112 Transient solution parameter **', unsafe_allow_html=False)
+st.sidebar.markdown('**2) Transient solution parameter**', unsafe_allow_html=False)
 nb_t = st.sidebar.number_input("Number of time steps", 1, 3600, 10)  # [-] Nombre de pas de temps
 dt = st.sidebar.number_input("Time step, [s]", 15, 3600, 900,
                              300)  # [s] Pas de temps ( 300 [s] --> 5 [min], 900 [s] --> 15 [min])
@@ -109,7 +110,7 @@ temps = np.arange(start=0, stop=nb_t * dt, step=dt).transpose()  # [s] Vecteur d
 
 # Reservoir #2 - EC
 # Res2 - Geometry
-st.sidebar.markdown('** &#10113 Tank **', unsafe_allow_html=False)
+st.sidebar.markdown('**3) Tank**', unsafe_allow_html=False)
 st.sidebar.markdown('Geometry')
 paramRes2.De = st.sidebar.number_input("Tank outer diameter, [in]", 12, 60, 24,
                                        6) * 0.0254  # [m] Diamètre extérieure du réservoir
@@ -155,7 +156,7 @@ paramRes2.Tin_EC = conversion.FtoC(st.sidebar.number_input("HWR temperature, [°
 paramRes2.Tink_EC = paramRes2.Tin_EC + 273.15  # [K] Conversion
 
 # Échangeur EFD
-st.sidebar.markdown('** &#10114 Heat Exchanger **', unsafe_allow_html=False)
+st.sidebar.markdown('**4) Heat Exchanger**', unsafe_allow_html=False)
 # HX EFD - Geometry
 st.sidebar.markdown('Geometry')
 paramHXefd.Do = st.sidebar.number_input("Coil pipe outside diameter, [in]", 0., 3., 0.75, 0.25) * 0.0254  # [m] Diamètre extérieur du tuyau (3/4 pouces)
@@ -605,30 +606,30 @@ with st.expander("Operating Conditions", expanded=True):
 #  Impression des figures
 with st.expander("Transient Results", expanded=True):
     fig1, (ax1, ax11) = plt.subplots(2, 1, num='results')
-    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, nb_t - 1])), label='$\itt$={0:.2f} h'.format(temps[nb_t - 1] / 3600))
+    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, nb_t - 1])), label='$t$={0:.2f} h'.format(temps[nb_t - 1] / 3600))
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 2)])),
-             label='$\itt$={0:.2f} h'.format(temps[round(nb_t / 2)] / 3600))
+             label='$t$={0:.2f} h'.format(temps[round(nb_t / 2)] / 3600))
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 3.25)])),
-             label='$\itt$={0:.2f} h'.format(temps[round(nb_t / 3.25)] / 3600))
+             label='$t$={0:.2f} h'.format(temps[round(nb_t / 3.25)] / 3600))
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 5)])),
-             label='$\itt$={0:.2f} h'.format(temps[round(nb_t / 5)] / 3600))
+             label='$t$={0:.2f} h'.format(temps[round(nb_t / 5)] / 3600))
     ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, round(nb_t / 10)])),
-             label='$\itt$={0:.2f} h'.format(temps[round(nb_t / 10)] / 3600))
-    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, 0])), label='$\itt$={0:.2f} h'.format(temps[0] / 3600))
-    ax1.set_xlabel('$\ity$ [ft]', color='k', fontname='Lucida Bright', fontsize=9)
-    ax1.set_ylabel('$\itT_{HW}$ [°F]', color='k', fontname='Lucida Bright', fontsize=9)
+             label='$t$={0:.2f} h'.format(temps[round(nb_t / 10)] / 3600))
+    ax1.plot(conversion.mtoft(paramRes2.y_num), conversion.CtoF(np.flipud(Res2results.T[:, 0])), label='$t$={0:.2f} h'.format(temps[0] / 3600))
+    ax1.set_xlabel('$y$ [ft]', color='k', fontsize=9)
+    ax1.set_ylabel('$T_{HW}$ [°F]', color='k', fontsize=9)
     ax11.plot(temps / 3600, conversion.CtoF(Res2results.T[0, :]),
-              label='$\ity$={0:.2f} ft'.format(conversion.mtoft(paramRes2.y_num[paramRes2.nb_y - 1])))  # Haut du réservoir
+              label='$y$={0:.2f} ft'.format(conversion.mtoft(paramRes2.y_num[paramRes2.nb_y - 1])))  # Haut du réservoir
     ax11.plot(temps / 3600, conversion.CtoF(Res2results.T[round(paramRes2.nb_y / 2), :]),
-              label='$\ity$={0:.2f} ft'.format(conversion.mtoft(paramRes2.y_num[round(paramRes2.nb_y / 2)])))  # Mi hauteur
+              label='$y$={0:.2f} ft'.format(conversion.mtoft(paramRes2.y_num[round(paramRes2.nb_y / 2)])))  # Mi hauteur
     ax11.plot(temps / 3600, conversion.CtoF(Res2results.T[paramRes2.nb_y - 1, :]),
-              label='$\ity$={0:.2f} ft'.format(conversion.mtoft(paramRes2.y_num[0])))  # Bas du réservoir
+              label='$y$={0:.2f} ft'.format(conversion.mtoft(paramRes2.y_num[0])))  # Bas du réservoir
     if paramHXefd.m_in>0:
-        ax11.plot(temps / 3600, conversion.CtoF(HXefdresults.Tout[0, :]), label='$\itHX_{out}$')  # sortie DHW HX
-    ax11.set_xlabel('Time [h]', color='k', fontname='Lucida Bright', fontsize=9)
-    ax11.set_ylabel('$\itT_{HW}$ or $\itT_{HX_{out}}$ [°F]', color='k', fontname='Lucida Bright', fontsize=9)
-    ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.25), ncol=3, prop={'family': 'Lucida Bright', 'size': 9})
-    ax11.legend(loc='upper center', bbox_to_anchor=(0.5, -0.20), ncol=2, prop={'family': 'Lucida Bright', 'size': 9})
+        ax11.plot(temps / 3600, conversion.CtoF(HXefdresults.Tout[0, :]), label='$HX_{out}$')  # sortie DHW HX
+    ax11.set_xlabel('Time [h]', color='k', fontsize=9)
+    ax11.set_ylabel('$T_{HW}$ or $T_{HX_{out}}$ [°F]', color='k',  fontsize=9)
+    ax1.legend(loc='upper center', bbox_to_anchor=(0.5, 1.25), ncol=3, prop={'size': 9})
+    ax11.legend(loc='upper center', bbox_to_anchor=(0.5, -0.20), ncol=2, prop={'size': 9})
     fig1.set_figheight(fig1.get_figheight() * 1.5)
     fig1.set_figwidth(fig1.get_figwidth())
     fig1.tight_layout()  # otherwise the right y-label is slightly clipped
